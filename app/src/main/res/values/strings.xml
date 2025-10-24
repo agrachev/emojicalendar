@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Emoji Calendar</string>
+    <string name="title_new_event">New Event</string>
+    <string name="title_edit_event">Edit Event</string>
+</resources>

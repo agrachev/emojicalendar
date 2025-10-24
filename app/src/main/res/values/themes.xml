@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.EmojiCalendar" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="EmojiPickerViewStyle">
+        <item name="colorControlNormal">#665558</item> <!-- Example for category icon color -->
+        <item name="colorAccent">#0277BD</item> <!-- Example for accent color -->
+    </style>
+</resources>
