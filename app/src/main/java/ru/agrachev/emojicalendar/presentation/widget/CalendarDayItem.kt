@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import ru.agrachev.emojicalendar.domain.core.Constants.WEEK_DAY_COUNT
 import ru.agrachev.emojicalendar.presentation.model.CalendarEventUIModel
 import ru.agrachev.emojicalendar.presentation.toIntPx
 
@@ -62,14 +63,14 @@ inline fun CalendarDayItem(
             dampingRatio = .7f,
         )
     )
-    val emoji by rememberUpdatedState(calendarEvent?.emoji ?: "")
+    val emoji by rememberUpdatedState(calendarEvent?.emoji.orEmpty())
     Box(
         modifier = Modifier
             .wrapContentSize(),
     ) {
         Box(
             modifier = Modifier
-                .width(width = contentWidth / 7)
+                .width(width = contentWidth / WEEK_DAY_COUNT)
                 .aspectRatio(.5f)
                 .padding(horizontal = 4.dp)
                 .graphicsLayer {

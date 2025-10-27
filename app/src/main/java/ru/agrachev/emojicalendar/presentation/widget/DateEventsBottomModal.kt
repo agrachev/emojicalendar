@@ -21,61 +21,52 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.flow.Flow
 import ru.agrachev.emojicalendar.presentation.arch.EmojiCalendarLabel
-import ru.agrachev.emojicalendar.presentation.model.AAA
-import ru.agrachev.emojicalendar.presentation.model.CalendarRuleUIModel
 import ru.agrachev.emojicalendar.presentation.model.MainCalendarDateUIModel
 import ru.agrachev.emojicalendar.presentation.navigation.EventEditorModalScreenDestination
+import ru.agrachev.emojicalendar.presentation.scope.modal.BottomModalScope
+import ru.agrachev.emojicalendar.presentation.scope.modal.DateEventsBottomModalScope
+import ru.agrachev.emojicalendar.presentation.scope.modal.PendingRuleProvider
 import ru.agrachev.emojicalendar.presentation.screen.EventBrowserModalScreen
-import ru.agrachev.emojicalendar.presentation.screen.ItemIndex
+import ru.agrachev.emojicalendar.presentation.viewmodel.CalendarMviStateHolder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateEventsBottomModal(
     dateUIModel: MainCalendarDateUIModel,
-    pendingRuleStateProvider: @Composable () -> State<CalendarRuleUIModel>,
-    labelProvider: () -> Flow<EmojiCalendarLabel>,
-    pendingRuleUpdater: (updater: AAA) -> Unit,
-    onCalendarRulePushRequest: (CalendarRuleUIModel) -> Unit,
-    onCalendarRulePushSuccess: () -> Unit,
-    onEventItemClicked: (item: ItemIndex) -> Unit,
-    onDismissRequest: () -> Unit,
+    initialPendingRuleProvider: PendingRuleProvider,
+    calendarStateHolder: CalendarMviStateHolder,
     modifier: Modifier = Modifier,
 ) {
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
     )
+    val modalScope: BottomModalScope = remember(calendarStateHolder) {
+        DateEventsBottomModalScope(calendarStateHolder)
+    }
     val navController = rememberNavController()
-    val kb by keyboardAsState()
+    val isKeyboardVisible by rememberKeyboardVisibilityState()
     ModalBottomSheet(
-        onDismissRequest = onDismissRequest,
+        onDismissRequest = modalScope::requestModalDismissal,
         sheetState = sheetState,
         dragHandle = {
-            DateEventsBottomModalDragHandle(0.dp)
+            DateEventsBottomModalDragHandle()
         }
-        //modifier = modifier,
     ) {
         NavHost(
             navController = navController,
             startDestination = DateEventsDestination.EventBrowser.route,
             modifier = Modifier
                 .then(
-                    if (!kb) Modifier.animateContentSize(
+                    if (!isKeyboardVisible) Modifier.animateContentSize(
                         animationSpec = tween(250)
                     ) else Modifier
-                )
-            //)
-            /*.animateContentSize(
-                animationSpec = tween(250),
-            ),*/
+                ),
         ) {
             composable(
                 route = DateEventsDestination.EventBrowser.route,
@@ -88,7 +79,7 @@ fun DateEventsBottomModal(
             ) {
                 EventBrowserModalScreen(
                     dateUIModel = dateUIModel,
-                    onEventItemClicked = onEventItemClicked,
+                    onEventItemClicked = modalScope::handleCalendarEventSelected,
                     modifier = modifier,
                 )
             }
@@ -102,34 +93,18 @@ fun DateEventsBottomModal(
                 },
                 popExitTransition = { ExitTransition.None },
             ) {
-                //requireNotNull(eventsBrowserUIModel.pendingRule)
-                EventEditorModalScreenDestination(
-                    pendingRuleStateProvider = pendingRuleStateProvider,
-                    onCalendarRulePushRequest = onCalendarRulePushRequest,
-                    pendingRuleUpdater = pendingRuleUpdater,
+                modalScope.EventEditorModalScreenDestination(
+                    dateModel = dateUIModel,
+                    initialPendingRuleProvider = initialPendingRuleProvider,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight(.8f),
-                    /*.height(600.dp.apply {
-                        println("DDDDDDD $this")
-                    }),*/
+                        .fillMaxHeight(.85f),
                 )
-                /*EventEditorModalScreen(
-                    pendingRule = eventsBrowserUIModel.pendingRule,
-                    modifier = modifier,
-                )*/
             }
         }
     }
-    LaunchedEffect(Unit) {
-        snapshotFlow {
-            kb
-        }.collect {
-            println("FFFFFFFFFFFFF $it")
-        }
-    }
     LaunchedEffect(navController) {
-        labelProvider()
+        calendarStateHolder.labels
             .collect {
                 when (it) {
                     is EmojiCalendarLabel.NavigateToItem -> {
@@ -142,7 +117,7 @@ fun DateEventsBottomModal(
 
                     EmojiCalendarLabel.CalendarRuleUpdateSuccess -> {
                         sheetState.hide()
-                        onCalendarRulePushSuccess()
+                        modalScope.reportCalendarRulePushSuccess()
                     }
                 }
             }
@@ -157,7 +132,7 @@ sealed class DateEventsDestination(
 }
 
 @Composable
-fun keyboardAsState(): State<Boolean> {
+fun rememberKeyboardVisibilityState(): State<Boolean> {
     val bottomInsetAnimator = remember {
         Animatable(0f)
     }

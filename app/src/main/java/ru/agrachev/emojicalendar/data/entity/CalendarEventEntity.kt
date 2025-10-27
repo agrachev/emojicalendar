@@ -9,7 +9,6 @@ import ru.agrachev.emojicalendar.domain.model.CalendarEvent
 import ru.agrachev.emojicalendar.domain.model.Id
 import java.time.LocalDate
 
-
 @Entity(
     tableName = "calendar_events",
     foreignKeys = [
@@ -27,7 +26,7 @@ data class CalendarEventEntity(
     val title: String?,
     val emoji: String,
     @ColumnInfo(name = "scheduled_date") val scheduledDate: LocalDate,
-    @ColumnInfo(name = "parent_id") val parentId: Id,
+    @ColumnInfo(name = "parent_id", index = true) val parentId: Id,
 )
 
 fun CalendarEventEntity.toCalendarEvent() = CalendarEvent(

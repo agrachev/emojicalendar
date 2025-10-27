@@ -12,13 +12,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import ru.agrachev.emojicalendar.presentation.toIntPx
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateEventsBottomModalDragHandle(
-    heightGrowthDelta: Dp,
     modifier: Modifier = Modifier,
+    heightGrowthDelta: Dp = 0.dp,
 ) {
     val heightGrowthDeltaPx = heightGrowthDelta.toIntPx()
     val anchoredDraggableState = remember {
@@ -45,7 +46,7 @@ fun DateEventsBottomModalDragHandle(
         snapshotFlow {
             anchoredDraggableState.targetValue
         }.collect {
-            println("BBBBBBBBBBBBBB $it")
+
         }
     }
 }

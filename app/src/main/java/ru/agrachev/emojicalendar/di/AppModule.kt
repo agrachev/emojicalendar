@@ -59,7 +59,6 @@ val appModule = module {
     factory<UIModelProvider<EmojiCalendarUIModel>> {
         EmojiCalendarUIModelProvider(
             storage = get(),
-            calendarDataRepository = get(),
         )
     }
     factory {

@@ -26,7 +26,6 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
@@ -35,17 +34,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -56,20 +50,24 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import ru.agrachev.emojicalendar.R
+import ru.agrachev.emojicalendar.domain.core.length
 import ru.agrachev.emojicalendar.domain.model.Id
 import ru.agrachev.emojicalendar.domain.model.RecurrenceRule
 import ru.agrachev.emojicalendar.presentation.LocalLocalizedCalendarResources
 import ru.agrachev.emojicalendar.presentation.core.Constants
+import ru.agrachev.emojicalendar.presentation.core.Constants.INFINITE
+import ru.agrachev.emojicalendar.presentation.core.LocalDateProvider
 import ru.agrachev.emojicalendar.presentation.core.dateItemIndexes
-import ru.agrachev.emojicalendar.presentation.core.length
 import ru.agrachev.emojicalendar.presentation.core.nullableDateIndex
 import ru.agrachev.emojicalendar.presentation.core.nullableEmoji
 import ru.agrachev.emojicalendar.presentation.core.nullableId
 import ru.agrachev.emojicalendar.presentation.core.nullableTitle
 import ru.agrachev.emojicalendar.presentation.core.observeStateChanges
+import ru.agrachev.emojicalendar.presentation.core.regularOffset
 import ru.agrachev.emojicalendar.presentation.core.regularOffsets
-import ru.agrachev.emojicalendar.presentation.model.AAA
+import ru.agrachev.emojicalendar.presentation.currentLocale
 import ru.agrachev.emojicalendar.presentation.model.CalendarEventUIModel
+import ru.agrachev.emojicalendar.presentation.model.CalendarRuleUILayout
 import ru.agrachev.emojicalendar.presentation.model.CalendarRuleUIModel
 import ru.agrachev.emojicalendar.presentation.model.EmojiType
 import ru.agrachev.emojicalendar.presentation.model.TitleType
@@ -86,57 +84,49 @@ import ru.agrachev.emojicalendar.presentation.widget.RepeatButton
 import ru.agrachev.emojicalendar.presentation.widget.rememberDateRangeThumbState
 import ru.agrachev.emojicalendar.presentation.widget.rememberOffsetRangeSliderState
 import ru.agrachev.emojicalendar.presentation.widget.rememberRecurrenceRuleButtonState
-import java.time.LocalDate
 import java.time.temporal.WeekFields
 
 @Composable
 fun EventEditorModalScreen(
-    pendingRule: CalendarRuleUIModel,
-    pendingRuleUpdater: (updater: AAA) -> Unit,
+    pendingRuleProvider: () -> CalendarRuleUIModel,
+    pendingRuleUpdater: (updater: CalendarRuleUILayout) -> Unit,
     onCalendarRulePushRequest: (CalendarRuleUIModel) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    println(pendingRule)
-    val pendingRuleState by rememberUpdatedState(pendingRule)
-    val now = remember(System.currentTimeMillis() / (60L * 60L * 1000L)) {
-        LocalDate.now()
-    }
+    val now = LocalDateProvider.current
     BoxWithConstraints(
-        modifier = modifier
+        modifier = modifier,
     ) {
         val layoutWidth = this.minWidth
         val contentWidth = layoutWidth * .9f
         Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             var selectedDateIndex by rememberSaveable {
                 mutableIntStateOf(
-                    pendingRuleState.dateRangeOffsetIndexes.start
+                    pendingRuleProvider().dateRangeOffsetIndexes.start
                 )
             }
             val selectedCalendarEvent by remember {
                 derivedStateOf {
-                    pendingRuleState.calendarEventsUiModels.find {
+                    pendingRuleProvider().calendarEventsUiModels.find {
                         it.dateIndex == selectedDateIndex
                     }
                 }
             }
-            val aa: (Int) -> CalendarEventUIModel? = { index ->
-                pendingRuleState.getCalendarEventForIndex(index)
-            }
             val scope = remember {
-                object : EventEditorModalScreenScope {
-                    override val pendingRuleState
-                        get() = pendingRuleState
+                object : EventEditorScreenScope() {
+                    override val pendingRuleProvider
+                        get() = pendingRuleProvider
                     override val selectedCalendarEvent
                         get() = selectedCalendarEvent
                     override val pendingRuleUpdater
                         get() = pendingRuleUpdater
                 }
             }
-            val tileIndexesRange = pendingRule.dateRangeOffsetIndexes
+            val tileIndexesRange = pendingRuleProvider().dateRangeOffsetIndexes
             val tileIndexOffset = (3 - tileIndexesRange.length / 2).coerceAtLeast(0)
             val calendarRowState = rememberLazyListState(
                 initialFirstVisibleItemIndex = tileIndexesRange.start - tileIndexOffset,
@@ -157,27 +147,30 @@ fun EventEditorModalScreen(
                     )
                 }
             }
-            val state = rememberTextFieldState(
-                initialText = pendingRule.title,
+            val calendarRuleTitleTextFieldState = rememberTextFieldState(
+                initialText = pendingRuleProvider().title,
             )
-            val state2 = rememberTextFieldState(
-                initialText = selectedCalendarEvent?.title ?: "",
+            val calendarEventTitleTextFieldState = rememberTextFieldState(
+                initialText = selectedCalendarEvent.title,
             )
-            var changed by remember {
+            var isCalendarEventTitleTextFieldDirty by remember {
                 mutableStateOf(true)
             }
-            val u = remember {
-                {
-                    with(selectedCalendarEvent?.title ?: "") {
-                        println("GHGHGHU $selectedCalendarEvent")
-                        changed = state2.text != this
-                        state2.setTextAndPlaceCursorAtEnd(this)
-                    }
+            val emojiPickedCallbackBuilder = scope.rememberEmojiPickedCallbackBuilder()
+            val emojiPickedHandler by remember {
+                derivedStateOf {
+                    emojiPickedCallbackBuilder(selectedDateIndex)
                 }
             }
-            val emojiPickedCallbackBuilder = scope.rememberEmojiPickedCallbackBuilder()
-            var emojiPickedHandler by remember {
-                mutableStateOf(emojiPickedCallbackBuilder(selectedDateIndex))
+            val setSelectedDateIndex: (Int) -> Unit = remember {
+                { index ->
+                    selectedDateIndex = index
+                    with(selectedCalendarEvent.title) {
+                        isCalendarEventTitleTextFieldDirty =
+                            calendarEventTitleTextFieldState.text != this
+                        calendarEventTitleTextFieldState.setTextAndPlaceCursorAtEnd(this)
+                    }
+                }
             }
             val startThumbState = rememberDateRangeThumbState(
                 initiallyExpanded = true,
@@ -204,65 +197,59 @@ fun EventEditorModalScreen(
                             itemIndexes.endInclusive - 1
                         )
                         if (selectedDateIndex != index) {
-                            selectedDateIndex = index.also { index ->
-                                emojiPickedHandler = emojiPickedCallbackBuilder(index)
-                            }
-                            u()
+                            setSelectedDateIndex(index)
                         }
                     }
             }
             with(scope) {
                 ModalHeadingRow {
-                    onCalendarRulePushRequest(pendingRuleState)
+                    onCalendarRulePushRequest(pendingRuleProvider())
                 }
-                EventTitleRow(state)
+                EventTitleRow(calendarRuleTitleTextFieldState)
             }
             EmojiCalendarTextField(
-                state = state2,
-                hintText = "hello 2",
+                textFieldState = calendarEventTitleTextFieldState,
+                hintText = stringResource(R.string.hint_event_notes),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, bottom = 32.dp),
-                colors = TextFieldDefaults.colors(
-                    errorIndicatorColor = Color.Red,
-                    focusedIndicatorColor = Color.Black,
+                /*colors = TextFieldDefaults.colors(
                     unfocusedIndicatorColor = TextFieldDefaults.colors().disabledTextColor
-                )
+                )*/
             )
             LaunchedEffect(Unit) {
                 snapshotFlow {
-                    state2.text
+                    calendarEventTitleTextFieldState.text
                 }
                     .filter {
-                        println("GHGHGH ${changed xor true} ${(changed xor false) && changed}")
-                        (changed xor true).apply {
-                            changed = this && changed
+                        (isCalendarEventTitleTextFieldDirty xor true).apply {
+                            isCalendarEventTitleTextFieldDirty =
+                                this && isCalendarEventTitleTextFieldDirty
                         }
                     }
                     .collect { text ->
-                        println("GHGHGH changed text: $text $selectedCalendarEvent")
                         scope.requestCalendarEventsModelsUpdate(
                             dateIndex = selectedDateIndex,
                             title = text.toString(),
                         )
                     }
             }
-            val s = rememberCoroutineScope()
             val weekdayNames = LocalLocalizedCalendarResources.current.weekdayNames
             LazyRow(
                 state = calendarRowState,
                 modifier = Modifier
                     .fillMaxWidth(),
             ) {
-                items(count = Int.MAX_VALUE, key = { it }) { index ->
+                items(count = INFINITE, key = { it }) { index ->
                     CalendarDayItem(
-                        calendarEvent = aa(index),
+                        calendarEvent = pendingRuleProvider()
+                            .getCalendarEventForIndex(index),
                         contentWidth = contentWidth,
                         dayOfWeekResolver = {
                             val aa =
-                                WeekFields.of(LocalConfiguration.current.locales[0]).dayOfWeek()
+                                WeekFields.of(LocalConfiguration.currentLocale).dayOfWeek()
                             val dayOfWeekIndex = now
-                                .plusDays((index - Constants.NOW_INDEX).toLong())
+                                .plusDays(index.regularOffset.toLong())
                                 .get(aa)
                             weekdayNames[dayOfWeekIndex - 1]
                         },
@@ -275,10 +262,7 @@ fun EventEditorModalScreen(
                             index == selectedDateIndex
                         },
                         onItemClicked = {
-                            selectedDateIndex = index.also {
-                                emojiPickedHandler = emojiPickedCallbackBuilder(it)
-                            }
-                            u()
+                            setSelectedDateIndex(index)
                         }
                     )
                 }
@@ -303,14 +287,14 @@ fun EventEditorModalScreen(
                     .width(contentWidth)
                     .offset(x = (layoutWidth - contentWidth) / 2 - 8.dp, y = 8.dp)
                     .then(
-                        remember {
-                            Modifier
-                                .moveWithList(
-                                    listState = calendarRowState,
-                                    firstVisibleItemOffset = offsetRangeSliderState.startOffsetValue - tileIndexOffset,
-                                )
-                        }
-                    )
+                        Modifier
+                            .moveWithList(
+                                listState = calendarRowState,
+                                firstVisibleItemOffset = offsetRangeSliderState.startOffsetValue - tileIndexOffset,
+                            )
+                    ).apply {
+                        println(this)
+                    }
             )
             EmojiPicker(
                 gridColumns = 8,
@@ -341,7 +325,7 @@ fun EventTitleRowLayout(
         val firstPassPlaceables = subcompose(Pass.FIRST, content).map {
             it.measure(constraints)
         }
-        val layoutHeight = firstPassPlaceables.firstOrNull()?.height ?: 0
+        val layoutHeight = firstPassPlaceables.minOf { it.height }
         val updatedConstraints = constraints.copy(
             maxWidth = constraints.maxWidth - layoutHeight,
             maxHeight = layoutHeight,
@@ -351,24 +335,24 @@ fun EventTitleRowLayout(
             it.measure(updatedConstraints)
         }
         layout(constraints.minWidth, layoutHeight) {
-            secondPassPlaceables.fold(0, { xOffset, placeable ->
+            secondPassPlaceables.fold(0) { xOffset, placeable ->
                 placeable.placeRelative(x = xOffset, y = 0)
                 xOffset + placeable.width
-            })
+            }
         }
     }
 }
 
 @Composable
-private inline fun EventEditorModalScreenScope.ModalHeadingRow(
+private inline fun EventEditorScreenScope.ModalHeadingRow(
     crossinline onSaveButtonClicked: (CalendarRuleUIModel) -> Unit,
 ) {
     val isNewEvent = rememberSaveable {
-        pendingRuleState.calendarEventsUiModels.isEmpty()
+        pendingRuleProvider().calendarEventsUiModels.isEmpty()
     }
     val canSave by remember {
         derivedStateOf {
-            pendingRuleState.calendarEventsUiModels.isNotEmpty() && pendingRuleState.title.isNotEmpty()
+            pendingRuleProvider().calendarEventsUiModels.isNotEmpty() && pendingRuleProvider().title.isNotEmpty()
         }
     }
     EventTitleRowLayout(
@@ -415,7 +399,7 @@ private inline fun EventEditorModalScreenScope.ModalHeadingRow(
                         interactionSource = null,
                         indication = null,
                         onClick = {
-                            onSaveButtonClicked(pendingRuleState)
+                            onSaveButtonClicked(pendingRuleProvider())
                         }
                     ),
             )
@@ -424,7 +408,7 @@ private inline fun EventEditorModalScreenScope.ModalHeadingRow(
 }
 
 @Composable
-private fun EventEditorModalScreenScope.EventTitleRow(
+private fun EventEditorScreenScope.EventTitleRow(
     state: TextFieldState,
 ) {
     EventTitleRowLayout(
@@ -432,27 +416,19 @@ private fun EventEditorModalScreenScope.EventTitleRow(
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
     ) {
-        val ts = Typography.headlineSmall
         EmojiCalendarTextField(
-            state = state,
-            hintText = "hello",
-            textStyle = ts,
-            hintTextStyle = ts,
-            validator = { text ->
-                text.isNotEmpty()
+            textFieldState = state,
+            hintText = stringResource(R.string.hint_event_title),
+            textStyle = Typography.headlineSmall,
+            validator = {
+                it.isNotEmpty()
             },
             modifier = Modifier
-                //.weight(1f)
                 .fillMaxWidth()
                 .padding(end = 16.dp),
-            colors = TextFieldDefaults.colors(
-                errorIndicatorColor = Color.Red,
-                focusedIndicatorColor = Color.Black,
-                unfocusedIndicatorColor = TextFieldDefaults.colors().disabledTextColor
-            )
         )
         val recurrenceRuleButtonState = rememberRecurrenceRuleButtonState(
-            initial = pendingRuleState.recurrenceRule,
+            initial = pendingRuleProvider().recurrenceRule,
         )
         RepeatButton(
             recurrenceRuleButtonState = recurrenceRuleButtonState,
@@ -480,7 +456,7 @@ private fun EventEditorModalScreenScope.EventTitleRow(
 fun EventEditorModalScreenPreview() {
     EmojiCalendarTheme {
         EventEditorModalScreen(
-            pendingRule = emptyCalendarRuleUIModel(),
+            pendingRuleProvider = { emptyCalendarRuleUIModel() },
             pendingRuleUpdater = {
 
             },
@@ -493,16 +469,11 @@ fun EventEditorModalScreenPreview() {
     }
 }
 
+@Composable
 fun Modifier.moveWithList(
     listState: LazyListState,
     firstVisibleItemOffset: Int = 0
-) = composed(
-    inspectorInfo = debugInspectorInfo {
-        name = "moveWithList"
-        properties["listState"] = listState
-        properties["firstVisibleItemOffset"] = firstVisibleItemOffset
-    }
-) {
+): Modifier {
     val calculateOffset = fun(
         lazyListItemInfo: LazyListItemInfo,
         firstVisibleItemOffset: Int,
@@ -539,7 +510,7 @@ fun Modifier.moveWithList(
                 }
         }
     }
-    this.then(
+    return this.then(
         Modifier.offset {
             IntOffset(x = viewOffset, y = 0)
         }
@@ -548,7 +519,7 @@ fun Modifier.moveWithList(
 
 sealed class CalendarRuleUiModelUpdater(
     calendarRuleUIModel: CalendarRuleUIModel
-) : AAA by calendarRuleUIModel {
+) : CalendarRuleUILayout by calendarRuleUIModel {
 
     class TitleUpdater(
         calendarRuleUIModel: CalendarRuleUIModel,
@@ -604,15 +575,75 @@ sealed class CalendarRuleUiModelUpdater(
     }
 }
 
-interface EventEditorModalScreenScope {
-    val pendingRuleState: CalendarRuleUIModel
-    val selectedCalendarEvent: CalendarEventUIModel?
-    val pendingRuleUpdater: (updater: AAA) -> Unit
+abstract class EventEditorScreenScope {
+
+    abstract val pendingRuleProvider: () -> CalendarRuleUIModel
+    abstract val selectedCalendarEvent: CalendarEventUIModel?
+    abstract val pendingRuleUpdater: (updater: CalendarRuleUILayout) -> Unit
+
+    fun requestPendingRuleTitleUpdate(
+        newTitle: String,
+    ) {
+        pendingRuleUpdater(
+            CalendarRuleUiModelUpdater
+                .TitleUpdater(
+                    calendarRuleUIModel = pendingRuleProvider(),
+                    newTitle = newTitle,
+                )
+        )
+    }
+
+    fun requestDateRangeOffsetIndexesUpdate(
+        range: IntRange,
+    ) {
+        pendingRuleUpdater(
+            CalendarRuleUiModelUpdater
+                .DateRangeOffsetIndexesUpdater(
+                    calendarRuleUIModel = pendingRuleProvider(),
+                    newDateRangeOffsetIndexes = range,
+                )
+        )
+    }
+
+    fun requestCalendarEventsModelsUpdate(
+        id: Id = selectedCalendarEvent.nullableId,
+        title: TitleType = selectedCalendarEvent.nullableTitle,
+        emoji: EmojiType = selectedCalendarEvent.nullableEmoji,
+        dateIndex: Int = selectedCalendarEvent.nullableDateIndex,
+    ) {
+        pendingRuleUpdater(
+            CalendarRuleUiModelUpdater
+                .CalendarEventsUIModelsUpdater(
+                    calendarRuleUIModel = pendingRuleProvider(),
+                    calendarEventUIModel = selectedCalendarEvent,
+                    calendarEventUIModelReducer = {
+                        copy(
+                            id = id,
+                            title = title,
+                            emoji = emoji,
+                            dateIndex = dateIndex,
+                        )
+                    },
+                )
+        )
+    }
+
+    fun requestPendingRuleRecurrenceRuleUpdate(
+        newRecurrenceRule: RecurrenceRule,
+    ) {
+        pendingRuleUpdater(
+            CalendarRuleUiModelUpdater
+                .RecurrenceRuleUpdater(
+                    calendarRuleUIModel = pendingRuleProvider(),
+                    newRecurrenceRule = newRecurrenceRule,
+                )
+        )
+    }
 }
 
 @Composable
 @NonRestartableComposable
-private fun EventEditorModalScreenScope.rememberEmojiPickedCallbackBuilder() = remember {
+private fun EventEditorScreenScope.rememberEmojiPickedCallbackBuilder() = remember {
     fun(index: Int) = { emoji: String ->
         this.requestCalendarEventsModelsUpdate(
             dateIndex = index,
@@ -621,61 +652,5 @@ private fun EventEditorModalScreenScope.rememberEmojiPickedCallbackBuilder() = r
     }
 }
 
-private fun EventEditorModalScreenScope.requestPendingRuleTitleUpdate(
-    newTitle: String,
-) {
-    pendingRuleUpdater(
-        CalendarRuleUiModelUpdater
-            .TitleUpdater(
-                calendarRuleUIModel = pendingRuleState,
-                newTitle = newTitle,
-            )
-    )
-}
-
-private fun EventEditorModalScreenScope.requestDateRangeOffsetIndexesUpdate(
-    range: IntRange,
-) {
-    pendingRuleUpdater(
-        CalendarRuleUiModelUpdater
-            .DateRangeOffsetIndexesUpdater(
-                calendarRuleUIModel = pendingRuleState,
-                newDateRangeOffsetIndexes = range,
-            )
-    )
-}
-
-private fun EventEditorModalScreenScope.requestCalendarEventsModelsUpdate(
-    id: Id = selectedCalendarEvent.nullableId,
-    title: TitleType = selectedCalendarEvent.nullableTitle,
-    emoji: EmojiType = selectedCalendarEvent.nullableEmoji,
-    dateIndex: Int = selectedCalendarEvent.nullableDateIndex,
-) {
-    pendingRuleUpdater(
-        CalendarRuleUiModelUpdater
-            .CalendarEventsUIModelsUpdater(
-                calendarRuleUIModel = pendingRuleState,
-                calendarEventUIModel = selectedCalendarEvent,
-                calendarEventUIModelReducer = {
-                    copy(
-                        id = id,
-                        title = title,
-                        emoji = emoji,
-                        dateIndex = dateIndex,
-                    )
-                },
-            )
-    )
-}
-
-private fun EventEditorModalScreenScope.requestPendingRuleRecurrenceRuleUpdate(
-    newRecurrenceRule: RecurrenceRule,
-) {
-    pendingRuleUpdater(
-        CalendarRuleUiModelUpdater
-            .RecurrenceRuleUpdater(
-                calendarRuleUIModel = pendingRuleState,
-                newRecurrenceRule = newRecurrenceRule,
-            )
-    )
-}
+private inline val CalendarEventUIModel?.title
+    get() = this?.title.orEmpty()

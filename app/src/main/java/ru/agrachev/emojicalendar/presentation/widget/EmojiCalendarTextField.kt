@@ -22,24 +22,20 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.vector.VectorProperty
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Devices.DEFAULT
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import ru.agrachev.emojicalendar.presentation.theme.EmojiCalendarTheme
 
 @Composable
 fun EmojiCalendarTextField(
-    state: TextFieldState,
     modifier: Modifier = Modifier,
-    textStyle: TextStyle = LocalTextStyle.current,
+    textFieldState: TextFieldState = rememberTextFieldState(),
     hintText: String = "",
-    hintTextStyle: TextStyle = LocalTextStyle.current,
+    textStyle: TextStyle = LocalTextStyle.current,
     colors: TextFieldColors = TextFieldDefaults.colors(),
     validator: (CharSequence) -> Boolean = { true }
 ) {
@@ -48,34 +44,34 @@ fun EmojiCalendarTextField(
     }
     val indicatorColor by animateColorAsState(
         targetValue = when (fieldState) {
-            EmojiCalendarTextFieldState.FOCUSED -> colors.focusedIndicatorColor
-            EmojiCalendarTextFieldState.UNFOCUSED -> colors.unfocusedIndicatorColor
+            EmojiCalendarTextFieldState.FOCUSED -> colors.focusedTextColor
+            EmojiCalendarTextFieldState.UNFOCUSED -> colors.disabledTextColor
             EmojiCalendarTextFieldState.ERROR -> colors.errorIndicatorColor
         }
     )
     val isEmpty by remember {
         derivedStateOf {
-            state.text.isEmpty()
+            textFieldState.text.isEmpty()
         }
     }
     var isValid by remember {
-        mutableStateOf(validator(state.text))
+        mutableStateOf(validator(textFieldState.text))
     }
     var isFocused by remember {
         mutableStateOf(false)
     }
 
     val textMeasurer = rememberTextMeasurer()
-    val mr = remember {
+    val measuredText = remember {
         textMeasurer.measure(
             text = AnnotatedString(text = hintText),
-            style = hintTextStyle,
+            style = textStyle,
         )
     }
 
-    LaunchedEffect(state) {
+    LaunchedEffect(textFieldState) {
         snapshotFlow {
-            state.text
+            textFieldState.text
         }.collect {
             fieldState = choose(
                 isValid = validator(it).apply {
@@ -87,7 +83,7 @@ fun EmojiCalendarTextField(
     }
 
     BasicTextField(
-        state = state,
+        state = textFieldState,
         lineLimits = TextFieldLineLimits.SingleLine,
         textStyle = textStyle,
         modifier = modifier.then(
@@ -101,7 +97,7 @@ fun EmojiCalendarTextField(
                     )
                     if (hintText.isNotEmpty() && isEmpty) {
                         drawText(
-                            textLayoutResult = mr,
+                            textLayoutResult = measuredText,
                             color = if (isValid) {
                                 colors.disabledTextColor
                             } else {
@@ -126,9 +122,6 @@ fun EmojiCalendarTextField(
 fun EmojiCalendarTextFieldPreview() {
     EmojiCalendarTheme {
         EmojiCalendarTextField(
-            state = rememberTextFieldState(
-                initialText = "",
-            ),
             hintText = "Hint",
             modifier = Modifier
                 .fillMaxWidth(),
@@ -136,7 +129,7 @@ fun EmojiCalendarTextFieldPreview() {
     }
 }
 
-enum class EmojiCalendarTextFieldState {
+private enum class EmojiCalendarTextFieldState {
     FOCUSED,
     UNFOCUSED,
     ERROR,

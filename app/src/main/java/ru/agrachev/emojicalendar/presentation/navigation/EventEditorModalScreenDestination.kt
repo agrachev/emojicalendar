@@ -1,29 +1,32 @@
 package ru.agrachev.emojicalendar.presentation.navigation
 
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import ru.agrachev.emojicalendar.presentation.model.AAA
-import ru.agrachev.emojicalendar.presentation.model.CalendarRuleUIModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.flow.mapNotNull
+import ru.agrachev.emojicalendar.presentation.model.MainCalendarDateUIModel
+import ru.agrachev.emojicalendar.presentation.model.emptyCalendarRuleUIModel
+import ru.agrachev.emojicalendar.presentation.scope.modal.BottomModalScope
+import ru.agrachev.emojicalendar.presentation.scope.modal.PendingRuleProvider
 import ru.agrachev.emojicalendar.presentation.screen.EventEditorModalScreen
 
 @Composable
-fun EventEditorModalScreenDestination(
-    pendingRuleStateProvider: @Composable () -> State<CalendarRuleUIModel>,
-    onCalendarRulePushRequest: (CalendarRuleUIModel) -> Unit,
-    pendingRuleUpdater: (updater: AAA) -> Unit,
+internal fun BottomModalScope.EventEditorModalScreenDestination(
+    dateModel: MainCalendarDateUIModel,
+    initialPendingRuleProvider: PendingRuleProvider,
     modifier: Modifier = Modifier,
 ) {
-    val pendingRule by pendingRuleStateProvider()
+    val pendingRule by uiStates
+        .mapNotNull {
+            it.eventsBrowserUIModel?.pendingRule
+        }.collectAsStateWithLifecycle(
+            initialValue = initialPendingRuleProvider() ?: emptyCalendarRuleUIModel(dateModel.date),
+        )
     EventEditorModalScreen(
-        pendingRule = pendingRule,
-        pendingRuleUpdater = pendingRuleUpdater,
-        onCalendarRulePushRequest = onCalendarRulePushRequest,
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(.85f),
+        pendingRuleProvider = { pendingRule },
+        pendingRuleUpdater = ::requestPendingRuleUpdate,
+        onCalendarRulePushRequest = ::requestPushCalendarRule,
+        modifier = modifier,
     )
 }

@@ -29,8 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import kotlinx.coroutines.launch
 import ru.agrachev.emojicalendar.R
+import ru.agrachev.emojicalendar.domain.core.fraction
 import ru.agrachev.emojicalendar.domain.model.RecurrenceRule
-import ru.agrachev.emojicalendar.presentation.core.fraction
 import ru.agrachev.emojicalendar.presentation.theme.EmojiCalendarTheme
 import kotlin.math.abs
 import kotlin.math.ceil

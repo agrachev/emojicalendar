@@ -33,7 +33,7 @@ fun EmojiImage(
                             topLeft = Offset(
                                 x = -(measuredText.size.width - size.width) * topLeftXOffsetScale,
                                 y = measuredText.size.height * topLeftYOffsetScale,
-                            )
+                            ),
                         )
                     }
                 }

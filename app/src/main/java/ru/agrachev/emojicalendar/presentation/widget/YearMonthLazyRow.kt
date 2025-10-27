@@ -14,12 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import ru.agrachev.emojicalendar.presentation.core.plus
-import java.time.LocalDate
+import ru.agrachev.emojicalendar.domain.core.plus
+import ru.agrachev.emojicalendar.domain.core.toInt
 import java.time.Month
-import kotlin.math.floor
-import kotlin.math.max
-import kotlin.math.min
 
 private const val MARGIN = 2
 
@@ -83,26 +80,3 @@ fun YearMonthLazyRow(
         }
     }
 }
-
-@Composable
-fun rememberYearOffsetFromNowRange(monthOffsetFromNow: Int): IntRange {
-    val currentMonth = remember {
-        LocalDate.now().monthValue
-    }
-    var range by remember {
-        mutableStateOf(0..0)
-    }
-    return remember(monthOffsetFromNow) {
-        val yearOffsetFromNow =
-            floor((currentMonth + monthOffsetFromNow) / Month.entries.size.toFloat()).toInt()
-        IntRange(
-            start = min(range.start, yearOffsetFromNow),
-            endInclusive = max(range.endInclusive, yearOffsetFromNow)
-        ).apply {
-            range = this
-        }
-    }
-}
-
-fun Boolean.toInt() = this.compareTo(false)
-fun Boolean.toFloat() = this.toInt().toFloat()

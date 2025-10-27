@@ -1,6 +1,7 @@
 package ru.agrachev.emojicalendar.presentation.arch
 
-import ru.agrachev.emojicalendar.presentation.model.AAA
+import ru.agrachev.emojicalendar.presentation.core.CalendarDateStorageKey
+import ru.agrachev.emojicalendar.presentation.model.CalendarRuleUILayout
 import ru.agrachev.emojicalendar.presentation.model.CalendarRuleUIModel
 import ru.agrachev.emojicalendar.presentation.model.MainCalendarDateUIModel
 import ru.agrachev.emojicalendar.presentation.screen.ItemIndex
@@ -8,7 +9,7 @@ import ru.agrachev.emojicalendar.presentation.screen.ItemIndex
 sealed interface EmojiCalendarIntent {
 
     data class LoadDayModelsForMonth(
-        val monthOffsetFromNow: Int,
+        val monthOffsetFromNow: CalendarDateStorageKey,
     ) : EmojiCalendarIntent
 
     data class PushCalendarRule(
@@ -28,6 +29,6 @@ sealed interface EmojiCalendarIntent {
     ) : EmojiCalendarIntent
 
     data class UpdatePendingRule(
-        val pendingRuleUpdater: AAA,
+        val pendingRuleUpdater: CalendarRuleUILayout,
     ) : EmojiCalendarIntent
 }

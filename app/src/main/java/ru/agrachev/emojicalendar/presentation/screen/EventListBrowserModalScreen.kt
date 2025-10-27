@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyListLayoutInfo
 import androidx.compose.foundation.lazy.LazyRow
@@ -74,13 +73,13 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import ru.agrachev.emojicalendar.R
+import ru.agrachev.emojicalendar.domain.core.toFloat
 import ru.agrachev.emojicalendar.domain.model.CalendarEvent
 import ru.agrachev.emojicalendar.presentation.theme.EmojiCalendarTheme
 import ru.agrachev.emojicalendar.presentation.theme.Typography
 import ru.agrachev.emojicalendar.presentation.toIntPx
 import ru.agrachev.emojicalendar.presentation.widget.DragHandleAnchors
 import ru.agrachev.emojicalendar.presentation.widget.EmojiImage
-import ru.agrachev.emojicalendar.presentation.widget.toFloat
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -278,8 +277,6 @@ fun EventListBrowserModalScreen(
                     modifier = Modifier
                         .weight(1f)
                         .padding(top = 8.dp, bottom = 16.dp)
-                    //.padding(16.dp)
-                    //.border(width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(16.dp))
                 ) {
                     with(calendarEvents[selectedIndex]) {
                         Text(

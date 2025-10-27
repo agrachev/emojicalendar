@@ -2,6 +2,7 @@ package ru.agrachev.emojicalendar.presentation.arch
 
 import com.arkivanov.mvikotlin.core.store.Reducer
 import ru.agrachev.emojicalendar.domain.model.Id
+import ru.agrachev.emojicalendar.presentation.core.value
 import ru.agrachev.emojicalendar.presentation.model.EmojiCalendarUIModel
 import ru.agrachev.emojicalendar.presentation.model.EventsBrowserUIModel
 import ru.agrachev.emojicalendar.presentation.model.emptyCalendarRuleUIModel
@@ -16,7 +17,7 @@ internal class EmojiCalendarReducer : Reducer<EmojiCalendarUIModel, EmojiCalenda
                     mainCalendarDateModelStorage = mainCalendarUIModel.mainCalendarDateModelStorage.apply {
                         put(msg.key, msg.models)
                     },
-                    monthOffsetKey = msg.key,
+                    monthOffsetKey = msg.key.value,
                 )
             )
 
@@ -54,7 +55,7 @@ internal class EmojiCalendarReducer : Reducer<EmojiCalendarUIModel, EmojiCalenda
 
             EmojiCalendarMessage.CalendarUpdateRequested -> copy(
                 mainCalendarUIModel = mainCalendarUIModel.copy(
-                    calendarRefreshRequestId = Id.UNIQUE,
+                    calendarRefreshRequestToken = Id.UNIQUE,
                 )
             )
         }

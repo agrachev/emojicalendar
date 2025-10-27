@@ -1,24 +1,27 @@
 package ru.agrachev.emojicalendar.presentation.core
 
-import ru.agrachev.emojicalendar.presentation.model.MainCalendarDateUIModel
-import java.util.concurrent.ConcurrentHashMap
+import com.google.common.cache.CacheBuilder
 
 class MainCalendarDateUIModelStorage : MainCalendarUIModelStorage {
 
-    private val cache =
-        ConcurrentHashMap<Int, List<MainCalendarDateUIModel>>()
+    private val cache = CacheBuilder
+        .newBuilder()
+        .maximumSize(CACHE_SIZE_THRESHOLD)
+        .build<CalendarDateStorageKey, CalendarDateStorageValue>()
 
-    override fun get(key: Int): List<MainCalendarDateUIModel>? =
-        cache.get(key)
+    override fun get(
+        key: CalendarDateStorageKey,
+    ): CalendarDateStorageValue? =
+        cache.getIfPresent(key)
 
     override fun put(
-        key: Int, value: List<MainCalendarDateUIModel>
-    ): List<MainCalendarDateUIModel>? = value.apply {
+        key: CalendarDateStorageKey,
+        value: CalendarDateStorageValue,
+    ): CalendarDateStorageValue? = value.apply {
         cache.put(key, this)
-        println("ZZZZZZZZZZZ ${cache.keys}")
     }
 
-    override fun remove(key: Int) {
-        cache.remove(key)
+    companion object {
+        const val CACHE_SIZE_THRESHOLD = 10L
     }
 }

@@ -9,12 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.FloatingActionButtonElevation
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
@@ -97,11 +95,8 @@ fun EventBrowserModalScreen(
             )
         } else {
             EmptyEventBrowserModalScreen(
-                onNewEventClicked = {
-                    onEventItemClicked(CalendarItem.New)
-                },
                 modifier = Modifier
-                    .wrapContentHeight()
+                    .padding(all = 16.dp),
             )
         }
     }

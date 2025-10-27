@@ -1,5 +1,10 @@
 <resources>
     <string name="app_name">Emoji Calendar</string>
-    <string name="title_new_event">New Event</string>
-    <string name="title_edit_event">Edit Event</string>
+    <string name="title_new_event">What\'s Your Plans?</string>
+    <string name="title_edit_event">Plans Change…</string>
+    <string name="title_event_title">Title</string>
+    <string name="hint_event_title">Enter Title Here</string>
+    <string name="title_event_notes">Notes</string>
+    <string name="hint_event_notes">Enter Notes Here</string>
+    <string name="lbl_no_events">Nothing is planned for today.</string>
 </resources>

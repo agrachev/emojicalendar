@@ -4,44 +4,27 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
+import ru.agrachev.emojicalendar.domain.core.minus
+import ru.agrachev.emojicalendar.domain.core.plus
+import ru.agrachev.emojicalendar.presentation.core.Constants.NOW_INDEX
 import ru.agrachev.emojicalendar.presentation.model.CalendarEventUIModel
 import ru.agrachev.emojicalendar.presentation.model.CalendarEventUIModel.Defaults.DEFAULT_DATE_INDEX
 import ru.agrachev.emojicalendar.presentation.model.CalendarEventUIModel.Defaults.DEFAULT_EMOJI
 import ru.agrachev.emojicalendar.presentation.model.CalendarEventUIModel.Defaults.DEFAULT_ID
 import ru.agrachev.emojicalendar.presentation.model.CalendarEventUIModel.Defaults.DEFAULT_TITLE
-import kotlin.reflect.KMutableProperty
-import kotlin.reflect.KProperty
+import ru.agrachev.emojicalendar.presentation.model.MainCalendarDateUIModel
 
-operator fun IntRange.unaryMinus() = IntRange(
-    start = -this.start,
-    endInclusive = -this.endInclusive,
-)
+internal inline val <T : Number> T.dateItemIndex
+    get() = this.toInt() + NOW_INDEX
 
-operator fun IntRange.plus(other: IntRange) = IntRange(
-    start = this.start + other.start,
-    endInclusive = this.endInclusive + other.endInclusive,
-)
+internal inline val IntRange.dateItemIndexes
+    get() = this + NOW_INDEX
 
-operator fun IntRange.minus(other: IntRange) = this + -other
+internal inline val <T : Number> T.regularOffset
+    get() = this.toInt() - NOW_INDEX
 
-operator fun IntRange.plus(value: Int) = IntRange(
-    start = this.start + value,
-    endInclusive = this.endInclusive + value,
-)
-
-operator fun IntRange.minus(value: Int) = this + -value
-
-inline val <T : Number> T.dateItemIndex
-    get() = this.toInt() + Constants.NOW_INDEX
-
-inline val IntRange.dateItemIndexes
-    get() = this + Constants.NOW_INDEX
-
-inline val IntRange.regularOffsets
-    get() = this - Constants.NOW_INDEX
-
-inline val <T> T.length where T : ClosedRange<out Int>
-    get() = this.endInclusive - this.start
+internal inline val IntRange.regularOffsets
+    get() = this - NOW_INDEX
 
 internal inline val CalendarEventUIModel?.nullableId
     get() = this?.id ?: DEFAULT_ID
@@ -57,5 +40,8 @@ internal suspend inline fun <T> Flow<T>.observeStateChanges(collector: FlowColle
     .distinctUntilChanged()
     .collect(collector)
 
-inline val Float.fraction
-    get() = this % 1f
+internal typealias CalendarDateStorageKey = CacheKey<Int>
+internal typealias CalendarDateStorageValue = List<MainCalendarDateUIModel>
+
+internal inline val Int.value
+    get() = this

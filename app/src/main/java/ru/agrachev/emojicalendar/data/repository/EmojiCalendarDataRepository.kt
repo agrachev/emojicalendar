@@ -1,7 +1,7 @@
 package ru.agrachev.emojicalendar.data.repository
 
+import ru.agrachev.emojicalendar.domain.core.toInt
 import ru.agrachev.emojicalendar.domain.repository.CalendarDataRepository
-import ru.agrachev.emojicalendar.presentation.widget.toInt
 import java.time.LocalDate
 import java.time.Month
 import java.time.YearMonth

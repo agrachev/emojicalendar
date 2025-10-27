@@ -167,9 +167,8 @@ class OffsetRangeSliderState(
         get() = sliderWidth / segments.toFloat()
 
     internal val startOffsetPx by derivedStateOf {
-        startOffsetValue * segmentWidth
+        sliderWidth * (startOffsetValue / segments) + segmentWidth * (startOffsetValue % segments)
     }
-    //private set
 
     internal val endOffsetPx by derivedStateOf {
         endOffsetValue * segmentWidth

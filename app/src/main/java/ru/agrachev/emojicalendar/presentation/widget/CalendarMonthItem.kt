@@ -14,49 +14,48 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices.DEFAULT
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ru.agrachev.emojicalendar.domain.core.Constants.MAX_WEEKS_IN_MONTH
+import ru.agrachev.emojicalendar.domain.core.Constants.WEEK_DAY_COUNT
+import ru.agrachev.emojicalendar.domain.model.CalendarEvent
+import ru.agrachev.emojicalendar.presentation.core.Constants.NOW_INDEX
+import ru.agrachev.emojicalendar.presentation.core.LocalDateProvider
+import ru.agrachev.emojicalendar.presentation.core.regularOffset
 import ru.agrachev.emojicalendar.presentation.model.MainCalendarDateUIModel
 import ru.agrachev.emojicalendar.presentation.shimmer
 import ru.agrachev.emojicalendar.presentation.theme.EmojiCalendarTheme
-import java.time.LocalDate
 
 @Composable
 fun CalendarMonthItem(
     mainCalendarDateModel: MainCalendarDateUIModel?,
-    state: Int,
+    currentSelectedIndexProvider: () -> Int,
     modifier: Modifier = Modifier,
 ) {
-    /*val a by remember {
-        derivedStateOf {
-            state.value == index
-        }
-    }*/
-    val m = remember(Unit) {
-        LocalDate.now().month
-    }
-    val aa = mainCalendarDateModel?.let {
-        mainCalendarDateModel.date.month == m.plus(
-            state - Int.MAX_VALUE / 2L
+    val isInCurrentMonth = mainCalendarDateModel?.let {
+        it.date.month == LocalDateProvider.current.month.plus(
+            currentSelectedIndexProvider().regularOffset.toLong()
         )
-    } ?: false
+    } == true
     val alpha by animateFloatAsState(
-        targetValue = if (aa) 1f else 64f / 255f,
+        targetValue = if (isInCurrentMonth) 1f else 64f / 255f,
         animationSpec = tween(300),
     )
     Box(
@@ -71,24 +70,29 @@ fun CalendarMonthItem(
     ) {
         val textMeasurer = LocalTextMeasurer.current
         val density = LocalDensity.current
-        val s = remember {
+        val shimmerSize = remember {
             with(density) {
                 textMeasurer.measure(
-                    "000",
-                    TextStyle(fontSize = 20.sp)
-                ).size.let { DpSize(it.width.toDp(), it.height.toDp()) }
+                    text = "000",
+                    style = TextStyle(fontSize = 20.sp),
+                ).size.let {
+                    DpSize(
+                        width = it.width.toDp(),
+                        height = it.height.toDp(),
+                    )
+                }
             }
         }
-        if (mainCalendarDateModel != null) {
+        mainCalendarDateModel?.let { model ->
             Text(
-                text = "${mainCalendarDateModel.date.dayOfMonth}",
+                text = "${model.date.dayOfMonth}",
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.TopStart),
             )
             AnimatedVisibility(
-                visible = !mainCalendarDateModel.emoji.isNullOrEmpty(),
+                visible = !model.emoji.isNullOrEmpty(),
                 modifier = Modifier
                     .fillMaxSize(),
                 enter = fadeIn() + slideInVertically(
@@ -99,20 +103,18 @@ fun CalendarMonthItem(
                 ) { it }
             ) {
                 EmojiImage(
-                    emoji = mainCalendarDateModel.emoji.orEmpty(),
+                    emoji = model.emoji.orEmpty(),
                     modifier = Modifier
                         .fillMaxSize(),
                 )
             }
-        } else {
-            Box(
-                modifier = Modifier
-                    .size(s)
-                    .padding(top = 4.dp)
-                    .align(Alignment.TopCenter)
-                    .shimmer(16.dp)
-            )
-        }
+        } ?: Box(
+            modifier = Modifier
+                .size(shimmerSize)
+                .padding(top = 4.dp)
+                .align(Alignment.TopCenter)
+                .shimmer(16.dp),
+        )
     }
 }
 
@@ -121,26 +123,35 @@ fun CalendarMonthItem(
 @Composable
 fun CalendarItemPreview() {
     EmojiCalendarTheme {
-        val state by remember {
-            mutableIntStateOf(0)
+        val now = LocalDateProvider.current
+        val testModel = remember {
+            MainCalendarDateUIModel(
+                date = now,
+                calendarEvents = listOf(
+                    CalendarEvent(
+                        emoji = "😭",
+                        scheduledDate = now,
+                    )
+                ),
+            )
         }
-        CalendarMonthItem(
-            mainCalendarDateModel = testModel,
-            state = state,
-            modifier = Modifier.size(
-                with(LocalDensity.current) {
-                    141.toDp()
-                }, with(LocalDensity.current) {
-                    320.toDp()
-                }),
-        )
+        val size = with(LocalConfiguration.current) {
+            DpSize(
+                width = (screenWidthDp / WEEK_DAY_COUNT).dp,
+                height = (screenHeightDp / MAX_WEEKS_IN_MONTH).dp
+            )
+        }
+        CompositionLocalProvider(LocalTextMeasurer provides rememberTextMeasurer()) {
+            CalendarMonthItem(
+                mainCalendarDateModel = testModel,
+                currentSelectedIndexProvider = { NOW_INDEX },
+                modifier = Modifier
+                    .size(size),
+            )
+        }
     }
 }
 
-val testModel = MainCalendarDateUIModel(
-    date = LocalDate.now(),
-    calendarEvents = emptyList(),
-)
 val LocalTextMeasurer = staticCompositionLocalOf<TextMeasurer> {
     error("CompositionLocal for TextMeasurer not present")
 }

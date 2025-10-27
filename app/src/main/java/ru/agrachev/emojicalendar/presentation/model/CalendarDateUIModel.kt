@@ -3,16 +3,16 @@ package ru.agrachev.emojicalendar.presentation.model
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import org.threeten.extra.LocalDateRange
+import ru.agrachev.emojicalendar.domain.core.length
 import ru.agrachev.emojicalendar.domain.model.CalendarDate
 import ru.agrachev.emojicalendar.domain.model.CalendarEvent
 import ru.agrachev.emojicalendar.domain.model.CalendarRule
 import ru.agrachev.emojicalendar.domain.model.Id
 import ru.agrachev.emojicalendar.domain.model.RecurrenceRule
-import ru.agrachev.emojicalendar.presentation.core.Constants
 import ru.agrachev.emojicalendar.presentation.core.MainCalendarUIModelStorage
 import ru.agrachev.emojicalendar.presentation.core.dateItemIndex
 import ru.agrachev.emojicalendar.presentation.core.dateItemIndexes
-import ru.agrachev.emojicalendar.presentation.core.length
+import ru.agrachev.emojicalendar.presentation.core.regularOffset
 import ru.agrachev.emojicalendar.presentation.core.regularOffsets
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -34,10 +34,8 @@ data class EmojiCalendarUIModel(
 @Stable
 data class MainCalendarUIModel(
     val mainCalendarDateModelStorage: MainCalendarUIModelStorage,
-    val weekdayNames: List<String>,
-    val monthNames: List<String>,
     val monthOffsetKey: Int = 0,
-    val calendarRefreshRequestId: Id = Id.UNIQUE,
+    val calendarRefreshRequestToken: Id = Id.UNIQUE,
 )
 
 @Stable
@@ -65,7 +63,7 @@ data class CalendarRuleUIModel(
     override val dateRangeOffsetIndexes: IntRange = (0..1).dateItemIndexes,
     override val calendarEventsUiModels: Set<CalendarEventUIModel> = emptySet(),
     override val recurrenceRule: RecurrenceRule = RecurrenceRule.DEFAULT,
-) : AAA {
+) : CalendarRuleUILayout {
 
     fun getCalendarEventForIndex(index: Int) = calendarEventsUiModels.find {
         when (recurrenceRule) {
@@ -121,7 +119,11 @@ internal fun CalendarRuleUIModel.toDomainModel(origin: LocalDate = LocalDate.now
             it.plusDays(regularOffsets.endInclusive.toLong())
         )
     },
-    calendarEvents = this.calendarEventsUiModels.map { it.toDomainModel() },
+    calendarEvents = this.calendarEventsUiModels
+        .asSequence()
+        .filter { it.emoji.isNotBlank() }
+        .map { it.toDomainModel() }
+        .toList(),
     recurrenceRule = this.recurrenceRule
 )
 
@@ -131,9 +133,7 @@ internal fun CalendarEventUIModel.toDomainModel(origin: LocalDate = LocalDate.no
         title = this.title,
         emoji = this.emoji,
         scheduledDate = origin
-            .plusDays(
-                (this.dateIndex - Constants.NOW_INDEX).toLong()
-            ),
+            .plusDays(this.dateIndex.regularOffset.toLong()),
     )
 
 internal fun CalendarRule.toPresentationModel(origin: LocalDate = LocalDate.now()) =
@@ -169,7 +169,7 @@ internal fun CalendarDate.toPresentationModel() = MainCalendarDateUIModel(
     calendarEvents = this.scheduledEvents,
 )
 
-interface AAA {
+interface CalendarRuleUILayout {
     val id: Id
     val title: String
     val dateRangeOffsetIndexes: IntRange

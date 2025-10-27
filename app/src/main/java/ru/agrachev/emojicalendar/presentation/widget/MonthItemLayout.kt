@@ -5,6 +5,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import ru.agrachev.emojicalendar.domain.core.Constants.MAX_WEEKS_IN_MONTH
+import ru.agrachev.emojicalendar.domain.core.Constants.WEEK_DAY_COUNT
 import ru.agrachev.emojicalendar.presentation.toIntPx
 import kotlin.math.ceil
 import kotlin.math.max
@@ -16,8 +18,8 @@ fun MonthItemLayout(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    val itemWidth = (width / 7).toIntPx()
-    val itemHeight = (height / 6).toIntPx()
+    val itemWidth = (width / WEEK_DAY_COUNT).toIntPx()
+    val itemHeight = (height / MAX_WEEKS_IN_MONTH).toIntPx()
     Layout(
         modifier = modifier,
         content = content
@@ -32,12 +34,13 @@ fun MonthItemLayout(
             measurable.measure(measurableConstraints)
         }
         val layoutWidth = constraints.maxWidth
-        val layoutHeight = ceil(max(measurables.size, 1) / 7.0).toInt() * itemHeight
+        val layoutHeight =
+            ceil(max(measurables.size, 1) / WEEK_DAY_COUNT.toFloat()).toInt() * itemHeight
         layout(layoutWidth, layoutHeight) {
             placeables.forEachIndexed { index, placeable ->
                 placeable.placeRelative(
-                    x = (index % 7) * itemWidth,
-                    y = (index / 7) * itemHeight,
+                    x = (index % WEEK_DAY_COUNT) * itemWidth,
+                    y = (index / WEEK_DAY_COUNT) * itemHeight,
                 )
             }
         }

@@ -1,14 +1,16 @@
 package ru.agrachev.emojicalendar.presentation.arch
 
-import ru.agrachev.emojicalendar.presentation.model.AAA
+import ru.agrachev.emojicalendar.presentation.core.CalendarDateStorageKey
+import ru.agrachev.emojicalendar.presentation.core.CalendarDateStorageValue
+import ru.agrachev.emojicalendar.presentation.model.CalendarRuleUILayout
 import ru.agrachev.emojicalendar.presentation.model.MainCalendarDateUIModel
 import ru.agrachev.emojicalendar.presentation.screen.ItemIndex
 
 internal sealed interface EmojiCalendarMessage {
 
     data class DayModelsLoaded(
-        val key: Int,
-        val models: List<MainCalendarDateUIModel>,
+        val key: CalendarDateStorageKey,
+        val models: CalendarDateStorageValue,
     ) : EmojiCalendarMessage
 
     data class EventsBrowserModalRequested(
@@ -22,7 +24,7 @@ internal sealed interface EmojiCalendarMessage {
     ) : EmojiCalendarMessage
 
     data class PendingRuleUpdated2(
-        val pendingRuleUpdater: AAA,
+        val pendingRuleUpdater: CalendarRuleUILayout,
     ) : EmojiCalendarMessage
 
     object CalendarUpdateRequested : EmojiCalendarMessage

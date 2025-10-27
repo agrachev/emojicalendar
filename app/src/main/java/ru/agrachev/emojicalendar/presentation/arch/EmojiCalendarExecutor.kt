@@ -17,6 +17,7 @@ import ru.agrachev.emojicalendar.presentation.arch.EmojiCalendarMessage.EventsBr
 import ru.agrachev.emojicalendar.presentation.arch.EmojiCalendarMessage.EventsBrowserModalRequested
 import ru.agrachev.emojicalendar.presentation.arch.EmojiCalendarMessage.PendingRuleUpdated
 import ru.agrachev.emojicalendar.presentation.arch.EmojiCalendarMessage.PendingRuleUpdated2
+import ru.agrachev.emojicalendar.presentation.core.value
 import ru.agrachev.emojicalendar.presentation.model.EmojiCalendarUIModel
 import ru.agrachev.emojicalendar.presentation.model.toDomainModel
 import ru.agrachev.emojicalendar.presentation.model.toPresentationModel
@@ -37,7 +38,7 @@ internal class EmojiCalendarExecutor(
                 scope.launch {
                     val result = withContext(defaultDispatcher) {
                         fetchMonthDataUseCase(
-                            offsetFromCurrentMonth = intent.monthOffsetFromNow,
+                            offsetFromCurrentMonth = intent.monthOffsetFromNow.value,
                         ).map {
                             it.toPresentationModel()
                         }

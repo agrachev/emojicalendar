@@ -1,5 +1,6 @@
 package ru.agrachev.emojicalendar.presentation
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,7 +28,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -35,6 +35,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -61,291 +63,285 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.mapNotNull
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import ru.agrachev.emojicalendar.domain.repository.DayModelStorage
-import ru.agrachev.emojicalendar.presentation.arch.EmojiCalendarIntent
-import ru.agrachev.emojicalendar.presentation.core.Constants
-import ru.agrachev.emojicalendar.presentation.model.CalendarRuleUIModel
+import ru.agrachev.emojicalendar.domain.model.Id
+import ru.agrachev.emojicalendar.presentation.core.CacheKey
+import ru.agrachev.emojicalendar.presentation.core.CalendarDateStorageKey
+import ru.agrachev.emojicalendar.presentation.core.CalendarDateStorageValue
+import ru.agrachev.emojicalendar.presentation.core.Constants.INFINITE
+import ru.agrachev.emojicalendar.presentation.core.Constants.NOW_INDEX
+import ru.agrachev.emojicalendar.presentation.core.LocalDateProvider
+import ru.agrachev.emojicalendar.presentation.core.MainCalendarUIModelStorage
+import ru.agrachev.emojicalendar.presentation.core.regularOffset
 import ru.agrachev.emojicalendar.presentation.model.LocalizedCalendarResources
 import ru.agrachev.emojicalendar.presentation.model.MainCalendarDateUIModel
 import ru.agrachev.emojicalendar.presentation.model.MainCalendarUIModel
-import ru.agrachev.emojicalendar.presentation.model.emptyCalendarRuleUIModel
+import ru.agrachev.emojicalendar.presentation.scope.calendar.EmojiCalendarScope
+import ru.agrachev.emojicalendar.presentation.scope.calendar.MainCalendarScope
 import ru.agrachev.emojicalendar.presentation.theme.EmojiCalendarTheme
+import ru.agrachev.emojicalendar.presentation.viewmodel.CalendarMviStateHolder
 import ru.agrachev.emojicalendar.presentation.viewmodel.CalendarViewModel
 import ru.agrachev.emojicalendar.presentation.widget.CalendarMonthItem
 import ru.agrachev.emojicalendar.presentation.widget.DateEventsBottomModal
 import ru.agrachev.emojicalendar.presentation.widget.LocalTextMeasurer
 import ru.agrachev.emojicalendar.presentation.widget.MonthItemLayout
 import ru.agrachev.emojicalendar.presentation.widget.YearMonthLazyRow
-import ru.agrachev.emojicalendar.presentation.widget.testModel
-import java.time.LocalDate
+import java.util.Locale
 import kotlin.math.abs
 
 class CalendarActivity : ComponentActivity() {
-    @OptIn(ExperimentalMaterial3Api::class)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val viewModel: CalendarViewModel by viewModel()
-        println(viewModel.initialUiState)
         setContent {
-            EmojiCalendarTheme {
-                val currentLocale = LocalConfiguration.current.locales[0]
-                val localizedCalendarResources = remember(currentLocale) {
-                    viewModel.getLocalizedCalendarResources(currentLocale)
-                }
-                CompositionLocalProvider(
-                    LocalLocalizedCalendarResources provides localizedCalendarResources,
-                ) {
-                    val uiState by viewModel.uiState.collectAsStateWithLifecycle(
-                        initialValue = viewModel.initialUiState,
+            EmojiCalendar(viewModel)
+        }
+    }
+}
+
+@Composable
+fun EmojiCalendar(viewModel: CalendarMviStateHolder) {
+    EmojiCalendarTheme {
+        val currentLocale = LocalConfiguration.currentLocale
+        val localizedCalendarResources = remember(currentLocale) {
+            viewModel.getLocalizedCalendarResources(currentLocale)
+        }
+        val textMeasurer = rememberTextMeasurer()
+        CompositionLocalProvider(
+            LocalLocalizedCalendarResources provides localizedCalendarResources,
+            LocalTextMeasurer provides textMeasurer,
+        ) {
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle(
+                initialValue = viewModel.initialUiState,
+            )
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+            ) { innerPadding ->
+                with(remember(viewModel) {
+                    EmojiCalendarScope(viewModel)
+                }) {
+                    MainCalendar(
+                        calendarUiModelProvider = {
+                            uiState.mainCalendarUIModel
+                        },
+                        modifier = Modifier
+                            .padding(innerPadding),
                     )
-                    Scaffold(
-                        modifier = Modifier.fillMaxSize(),
-                    ) { innerPadding ->
-                        Greeting(
-                            requestDayModelsCallback = { offset ->
-                                viewModel.accept(
-                                    EmojiCalendarIntent.LoadDayModelsForMonth(
-                                        monthOffsetFromNow = offset,
-                                    )
-                                )
-                            },
-                            openModalRequest = { model ->
-                                viewModel.accept(
-                                    EmojiCalendarIntent.OpenEventsBrowserModal(
-                                        model = model,
-                                    )
-                                )
-                            },
-                            requestNumberOfWeeksCallback = { offsetFromCurrentMonth ->
-                                viewModel.getNumberOfWeeks(offsetFromCurrentMonth)
-                            },
-                            uiState = uiState.mainCalendarUIModel,
-                            modifier = Modifier
-                                .padding(innerPadding),
-                        )
-                    }
-                    uiState.eventsBrowserUIModel?.let {
-                        val textMeasurer = rememberTextMeasurer()
-                        CompositionLocalProvider(LocalTextMeasurer provides textMeasurer) {
-                            DateEventsBottomModal(
-                                dateUIModel = it.dateModel,
-                                pendingRuleStateProvider = {
-                                    viewModel.uiState.mapNotNull { uiState ->
-                                        uiState.eventsBrowserUIModel?.pendingRule
-                                    }.collectAsStateWithLifecycle(
-                                        initialValue = uiState.eventsBrowserUIModel?.pendingRule
-                                            ?: emptyCalendarRuleUIModel(it.dateModel.date)
-                                    )
-                                },
-                                pendingRuleUpdater = { updater ->
-                                    viewModel.accept(
-                                        EmojiCalendarIntent.UpdatePendingRule(
-                                            updater
-                                        )
-                                    )
-                                },
-                                onCalendarRulePushRequest = {
-                                    viewModel.accept(
-                                        EmojiCalendarIntent.PushCalendarRule(
-                                            it
-                                        )
-                                    )
-                                },
-                                onCalendarRulePushSuccess = {
-                                    viewModel.accept(
-                                        EmojiCalendarIntent.RequestCalendarUpdate
-                                    )
-                                },
-                                labelProvider = {
-                                    viewModel.labels
-                                },
-                                onEventItemClicked = { index ->
-                                    viewModel.accept(
-                                        EmojiCalendarIntent.NavigateToItem(
-                                            index
-                                        )
-                                    )
-                                },
-                                onDismissRequest = {
-                                    viewModel.accept(
-                                        EmojiCalendarIntent.DismissEventsBrowserModal
-                                    )
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                //.wrapContentHeight()
-                            )
-                        }
+                }
+            }
+            uiState.eventsBrowserUIModel?.let {
+                val initialPendingRuleProvider = remember {
+                    {
+                        it.pendingRule
                     }
                 }
+                DateEventsBottomModal(
+                    dateUIModel = it.dateModel,
+                    initialPendingRuleProvider = initialPendingRuleProvider,
+                    calendarStateHolder = viewModel,
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                )
             }
         }
     }
 }
 
 @Composable
-fun Greeting(
-    requestDayModelsCallback: (Int) -> Unit,
-    openModalRequest: (model: MainCalendarDateUIModel) -> Unit,
-    requestNumberOfWeeksCallback: (Int) -> Int,
-    uiState: MainCalendarUIModel,
-    modifier: Modifier = Modifier
+private fun MainCalendarScope.MainCalendar(
+    calendarUiModelProvider: () -> MainCalendarUIModel,
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
     ) {
-        val cc = remember {
-            LocalDate.now().year
-        }
-        val aa = remember {
-            LocalDate.now().monthValue - 1
-        }
-        val lazyRowState = rememberLazyListState(
-            initialFirstVisibleItemIndex = aa,
-        )
-        val backgroundColor = MaterialTheme.colorScheme.background
-        YearMonthLazyRow(
-            stickyHeaderContent = { yearOffsetFromNow: Int, modifier: Modifier ->
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .width(68.dp)
-                        .fillMaxHeight()
-                        .drawBehind {
-                            drawRect(
-                                color = backgroundColor,
-                                size = size.copy(width = size.height)
-                            )
-                        }
-                        .padding(horizontal = 2.dp)
-                        .background(color = Color.LightGray, shape = RoundedCornerShape(16.dp))
-                ) {
-                    Text(
-                        text = (cc + yearOffsetFromNow).toString(),
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                    )
-                }
+        YearMonthRow()
+        WeekdayRow()
+        CalendarGrid(
+            calendarRefreshRequestTokenProvider = {
+                calendarUiModelProvider().calendarRefreshRequestToken
             },
-            itemContent = { monthIndex: Int, modifier: Modifier ->
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .width(68.dp)
-                        .fillMaxHeight()
-                        .padding(horizontal = 2.dp)
-                        .border(
-                            width = 1.dp,
-                            color = Color.LightGray,
-                            shape = RoundedCornerShape(16.dp)
+            mainCalendarDateUIModelFactory = {
+                calendarUiModelProvider().mainCalendarDateModelStorage[it]
+            },
+        )
+    }
+}
+
+@Composable
+private fun MainCalendarScope.YearMonthRow() {
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val (currentYear, currentMonth) = with(LocalDateProvider.current) {
+        Pair(year, monthValue - 1)
+    }
+    val lazyRowState = rememberLazyListState(
+        initialFirstVisibleItemIndex = currentMonth,
+    )
+    YearMonthLazyRow(
+        stickyHeaderContent = { yearOffsetFromNow: Int, modifier: Modifier ->
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .width(68.dp)
+                    .fillMaxHeight()
+                    .drawBehind {
+                        drawRect(
+                            color = backgroundColor,
+                            size = size.copy(width = size.height)
                         )
-                ) {
-                    Text(
-                        text = LocalLocalizedCalendarResources.current.monthNames[monthIndex],
+                    }
+                    .padding(horizontal = 2.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        shape = RoundedCornerShape(16.dp),
                     )
-                }
-            },
-            lazyRowState = lazyRowState,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(32.dp),
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            LocalLocalizedCalendarResources.current.weekdayNames.forEach {
+            ) {
                 Text(
-                    text = it,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .weight(1.0f),
+                    text = (currentYear + yearOffsetFromNow).toString(),
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
                 )
             }
+        },
+        itemContent = { monthIndex: Int, modifier: Modifier ->
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .width(68.dp)
+                    .fillMaxHeight()
+                    .padding(horizontal = 2.dp)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+            ) {
+                Text(
+                    text = LocalLocalizedCalendarResources.current.monthNames[monthIndex],
+                )
+            }
+        },
+        lazyRowState = lazyRowState,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(32.dp),
+    )
+    LaunchedEffect(lazyRowState) {
+        snapshotFlow {
+            currentMonthIndex
         }
-        BoxWithConstraints(
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            val boxWithConstraintsScope = this
-            val width = boxWithConstraintsScope.maxWidth
-            val height = boxWithConstraintsScope.maxHeight
-            val textMeasurer = rememberTextMeasurer()
-            val listState = rememberLazyListState(
-                initialFirstVisibleItemIndex = Constants.NOW_INDEX,
+            .distinctUntilChanged()
+            .collect {
+                // TODO rework scrolling logic
+                lazyRowState.animateScrollToItem(
+                    currentMonth + currentMonthIndex.regularOffset + 1 *
+                            (if (lazyRowState.layoutInfo.visibleItemsInfo[3].contentType == "yearTile") 1 else 0)
+                )
+            }
+    }
+}
+
+@Composable
+private fun WeekdayRow() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        LocalLocalizedCalendarResources.current.weekdayNames.forEach {
+            Text(
+                text = it,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .weight(1f),
             )
-            val currentMonthIndex by remember {
-                derivedStateOf {
-                    with(listState.layoutInfo.visibleItemsInfo) {
-                        if (isNullOrEmpty()) {
-                            listState.firstVisibleItemIndex
-                        } else {
-                            minBy { abs(it.offset) }.index
-                        }
+        }
+    }
+}
+
+@Composable
+private fun MainCalendarScope.CalendarGrid(
+    calendarRefreshRequestTokenProvider: () -> Id,
+    mainCalendarDateUIModelFactory: (CalendarDateStorageKey) -> CalendarDateStorageValue?,
+) {
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        val boxWithConstraintsScope = this
+        val width = boxWithConstraintsScope.maxWidth
+        val height = boxWithConstraintsScope.maxHeight
+        val listState = rememberLazyListState(
+            initialFirstVisibleItemIndex = NOW_INDEX,
+        )
+        val currentMonthIndex by remember {
+            derivedStateOf {
+                with(listState.layoutInfo.visibleItemsInfo) {
+                    if (isNullOrEmpty()) {
+                        listState.firstVisibleItemIndex
+                    } else {
+                        minBy { abs(it.offset) }.index
                     }
                 }
             }
-            LaunchedEffect(lazyRowState) {
-                snapshotFlow {
-                    currentMonthIndex
-                }
-                    .distinctUntilChanged()
-                    .collect {
-                        println("AAAAAAAAAA $currentMonthIndex ${lazyRowState.layoutInfo.visibleItemsInfo.map { it.contentType }}")
-                        lazyRowState.animateScrollToItem(
-                            aa + (currentMonthIndex - Int.MAX_VALUE / 2) + 1 *
-                                    (if (lazyRowState.layoutInfo.visibleItemsInfo[3].contentType == "yearTile") 1 else 0)
-                        )
-                        //n = it
-                    }
+        }
+        LaunchedEffect(listState) {
+            snapshotFlow {
+                currentMonthIndex
             }
-            CompositionLocalProvider(LocalTextMeasurer provides textMeasurer) {
-                key(uiState.calendarRefreshRequestId, LocalConfiguration.current.locales[0]) {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        state = listState,
-                        flingBehavior = rememberSnapFlingBehavior(
-                            lazyListState = listState,
-                            snapPosition = SnapPosition.Start,
-                        ),
+                .distinctUntilChanged()
+                .collect {
+                    setCurrentMonthIndex(it)
+                }
+        }
+        key(
+            calendarRefreshRequestTokenProvider(),
+            LocalConfiguration.currentLocale,
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                state = listState,
+                flingBehavior = rememberSnapFlingBehavior(
+                    lazyListState = listState,
+                    snapPosition = SnapPosition.Start,
+                ),
+            ) {
+                items(count = INFINITE, key = { it.regularOffset }) { index ->
+                    val offset = index.regularOffset
+                    val key = remember(offset) {
+                        CacheKey(offset)
+                    }
+                    LaunchedEffect(key) {
+                        requestDayModelsCallback(key)
+                    }
+                    val monthDays =
+                        mainCalendarDateUIModelFactory(key)
+                            ?: arrayOfNulls<MainCalendarDateUIModel>(
+                                7 * requestNumberOfWeeksCallback(
+                                    offset
+                                )
+                            ).toList()
+                    MonthItemLayout(
+                        width, height,
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
-                        items(count = Int.MAX_VALUE) { index ->
-                            val offset = index - Int.MAX_VALUE / 2
-                            LaunchedEffect(offset) {
-                                requestDayModelsCallback.invoke(offset)
-                            }
-                            val monthDays =
-                                uiState.mainCalendarDateModelStorage[offset]
-                                    ?: arrayOfNulls<MainCalendarDateUIModel>(
-                                        7 * requestNumberOfWeeksCallback(
-                                            offset
+                        monthDays.forEachIndexed { time, model ->
+                            key(time) {
+                                CalendarMonthItem(
+                                    mainCalendarDateModel = model,
+                                    currentSelectedIndexProvider = { currentMonthIndex },
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .customBorder(
+                                            index = time,
+                                            width = 1.dp,
+                                            color = MaterialTheme.colorScheme.outlineVariant,
                                         )
-                                    ).toList()
-                            MonthItemLayout(
-                                width, height,
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                monthDays.forEachIndexed { time, model ->
-                                    key(time) {
-                                        CalendarMonthItem(
-                                            mainCalendarDateModel = model,
-                                            currentMonthIndex,
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .customBorder(
-                                                    index = time,
-                                                    width = 1.dp,
-                                                    color = Color.LightGray,
-                                                )
-                                                .then(model?.let {
-                                                    Modifier.clickable {
-                                                        openModalRequest(model)
-                                                    }
-                                                } ?: Modifier),
-                                        )
-                                    }
-                                }
+                                        .then(model?.let {
+                                            Modifier.clickable {
+                                                openModalRequest(model)
+                                            }
+                                        } ?: Modifier)
+                                )
                             }
                         }
                     }
@@ -356,6 +352,7 @@ fun Greeting(
 }
 
 @Composable
+@ReadOnlyComposable
 @NonRestartableComposable
 fun Dp.toIntPx() = with(LocalDensity.current) {
     this@toIntPx.roundToPx()
@@ -365,76 +362,63 @@ fun Dp.toIntPx() = with(LocalDensity.current) {
 @Composable
 fun GreetingPreview() {
     val uiState = MainCalendarUIModel(
-        mainCalendarDateModelStorage = object :
-            DayModelStorage<Int, List<MainCalendarDateUIModel>> {
-            override fun get(key: Int): List<MainCalendarDateUIModel>? = null
+        mainCalendarDateModelStorage = object : MainCalendarUIModelStorage {
+            override fun get(
+                key: CalendarDateStorageKey,
+            ): CalendarDateStorageValue? = null
 
             override fun put(
-                key: Int,
-                value: List<MainCalendarDateUIModel>
-            ): List<MainCalendarDateUIModel>? {
-                TODO("Not yet implemented")
-            }
-
-            override fun remove(key: Int) {
-                TODO("Not yet implemented")
-            }
-
+                key: CalendarDateStorageKey,
+                value: CalendarDateStorageValue
+            ): CalendarDateStorageValue? = TODO()
         },
-        weekdayNames = listOf("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"),
-        monthNames = listOf(
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sept",
-            "Oct",
-            "Nov",
-            "Dec"
-        ),
-
-        )
+    )
     EmojiCalendarTheme {
-        Greeting(
-            requestDayModelsCallback = { _ ->
-                List(42) {
-                    testModel
-                }
-            },
-            requestNumberOfWeeksCallback = {
-                0
-            },
-            openModalRequest = { },
-            uiState = uiState,
-        )
-    }
-}
+        val scope = remember {
+            object : MainCalendarScope {
+                override fun requestDayModelsCallback(monthOffset: CalendarDateStorageKey) = TODO()
 
-@Composable
-fun Modifier.customBorder(index: Int, width: Dp, color: Color): Modifier =
-    this.drawWithContent {
-        drawContent()
-        drawLine(color, Offset.Zero, Offset(size.width, 0f), strokeWidth = width.toPx())
-        if (index % 7 != 6) {
-            drawLine(
-                color,
-                Offset(size.width, 0f),
-                Offset(size.width, size.height),
-                strokeWidth = width.toPx()
+                override fun openModalRequest(model: MainCalendarDateUIModel) = TODO()
+
+                override fun requestNumberOfWeeksCallback(monthOffset: Int): Int = 4
+
+                override fun setCurrentMonthIndex(index: Int) = TODO()
+
+            }
+        }
+        val textMeasurer = rememberTextMeasurer()
+        CompositionLocalProvider(
+            LocalTextMeasurer provides textMeasurer,
+        ) {
+            scope.MainCalendar(
+                calendarUiModelProvider = { uiState },
             )
         }
     }
+}
+
+fun Modifier.customBorder(index: Int, width: Dp, color: Color): Modifier =
+    this.then(
+        Modifier.drawWithContent {
+            drawContent()
+            drawLine(color, Offset.Zero, Offset(size.width, 0f), strokeWidth = width.toPx())
+            if (index % 7 != 6) {
+                drawLine(
+                    color,
+                    Offset(size.width, 0f),
+                    Offset(size.width, size.height),
+                    strokeWidth = width.toPx()
+                )
+            }
+        }
+    )
 
 @Composable
 fun Modifier.shimmer(cornerRadius: Dp = 0.dp): Modifier {
     val shimmerColors = listOf(
-        Color.LightGray,
+        MaterialTheme.colorScheme.outlineVariant,
         Color.White,
-        Color.LightGray
+        MaterialTheme.colorScheme.outlineVariant,
     )
 
     val transition = rememberInfiniteTransition(
@@ -490,3 +474,5 @@ val LocalLocalizedCalendarResources = staticCompositionLocalOf {
     )
 }
 
+inline val ProvidableCompositionLocal<Configuration>.currentLocale: Locale
+    @Composable @ReadOnlyComposable get() = this.current.locales[0]

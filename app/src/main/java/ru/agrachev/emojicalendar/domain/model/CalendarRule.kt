@@ -1,6 +1,5 @@
 package ru.agrachev.emojicalendar.domain.model
 
-import kotlinx.serialization.Serializable
 import org.threeten.extra.LocalDateRange
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit

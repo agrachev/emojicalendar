@@ -37,12 +37,12 @@ class EmojiCalendarEventsRepository(
     override suspend fun cancelCalendarEvent(calendarEvent: CalendarEvent) =
         database.calendarRuleDao().deleteCalendarEvent(
             calendarEvent.toCalendarEventEntity(
-                parentId = calendarEvent.rule?.id ?: Id.UNIQUE
+                parentId = calendarEvent.rule?.id ?: Id.UNIQUE,
             )
         )
 
     override suspend fun cancelCalendarRule(calendarRule: CalendarRule) =
         database.calendarRuleDao().deleteCalendarRule(
-            calendarRule.toCalendarRuleEntity()
+            calendarRule.toCalendarRuleEntity(),
         )
 }
