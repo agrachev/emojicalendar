@@ -73,6 +73,7 @@ import ru.agrachev.emojicalendar.presentation.core.Constants.NOW_INDEX
 import ru.agrachev.emojicalendar.presentation.core.LocalDateProvider
 import ru.agrachev.emojicalendar.presentation.core.MainCalendarUIModelStorage
 import ru.agrachev.emojicalendar.presentation.core.regularOffset
+import ru.agrachev.emojicalendar.presentation.widget.modal.DateEventsBottomModal
 import ru.agrachev.emojicalendar.presentation.model.LocalizedCalendarResources
 import ru.agrachev.emojicalendar.presentation.model.MainCalendarDateUIModel
 import ru.agrachev.emojicalendar.presentation.model.MainCalendarUIModel
@@ -82,7 +83,6 @@ import ru.agrachev.emojicalendar.presentation.theme.EmojiCalendarTheme
 import ru.agrachev.emojicalendar.presentation.viewmodel.CalendarMviStateHolder
 import ru.agrachev.emojicalendar.presentation.viewmodel.CalendarViewModel
 import ru.agrachev.emojicalendar.presentation.widget.CalendarMonthItem
-import ru.agrachev.emojicalendar.presentation.widget.DateEventsBottomModal
 import ru.agrachev.emojicalendar.presentation.widget.LocalTextMeasurer
 import ru.agrachev.emojicalendar.presentation.widget.MonthItemLayout
 import ru.agrachev.emojicalendar.presentation.widget.YearMonthItemContentType
@@ -433,8 +433,8 @@ fun Modifier.shimmer(cornerRadius: Dp = 0.dp): Modifier {
         targetValue = 1200f,
         animationSpec = infiniteRepeatable(
             animation = tween(
-                durationMillis = 1600, // slower = smoother
-                easing = FastOutSlowInEasing // smoother easing
+                durationMillis = 1600,
+                easing = FastOutSlowInEasing,
             )
         ),
         label = "translate gradient"
@@ -444,15 +444,13 @@ fun Modifier.shimmer(cornerRadius: Dp = 0.dp): Modifier {
         val brush = Brush.linearGradient(
             colors = shimmerColors,
             start = Offset(translateAnim, 0f),
-            // wider gradient
-            end = Offset(translateAnim + size.width / 1.5f, size.height)
+            end = Offset(translateAnim + size.width / 1.5f, size.height),
         )
         val cornerPx = cornerRadius.toPx()
         onDrawWithContent {
             drawRoundRect(
                 brush = brush,
                 cornerRadius = CornerRadius(cornerPx, cornerPx),
-                size = size
             )
         }
     }

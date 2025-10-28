@@ -23,24 +23,18 @@ import ru.agrachev.emojicalendar.presentation.core.MainCalendarUIModelStorage
 import ru.agrachev.emojicalendar.presentation.core.UIModelProvider
 import ru.agrachev.emojicalendar.presentation.model.EmojiCalendarUIModel
 import ru.agrachev.emojicalendar.presentation.viewmodel.CalendarViewModel
-import ru.agrachev.emojicalendar.presentation.widget.DateRangeThumbState
+import ru.agrachev.emojicalendar.presentation.widget.slider.DateRangeThumbState
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
 @OptIn(KoinExperimentalAPI::class)
 val appModule = module {
-    /*includes(
-        appRepositoryModule,
-        recipeParserModule(packageContentRepositoryModule()),
-    )*/
-
     single {
         Room.databaseBuilder(
             get(),
             EmojiCalendarDatabase::class.java, "emoji-calendar-db"
         ).build()
     }
-
     single(qualifier = named("aaa")) {
         Dispatchers.IO
     }

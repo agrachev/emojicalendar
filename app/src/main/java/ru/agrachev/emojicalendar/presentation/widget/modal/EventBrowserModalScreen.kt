@@ -1,4 +1,4 @@
-package ru.agrachev.emojicalendar.presentation.screen
+package ru.agrachev.emojicalendar.presentation.widget.modal
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize

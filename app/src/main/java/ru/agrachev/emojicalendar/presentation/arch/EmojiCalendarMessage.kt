@@ -2,9 +2,9 @@ package ru.agrachev.emojicalendar.presentation.arch
 
 import ru.agrachev.emojicalendar.presentation.core.CalendarDateStorageKey
 import ru.agrachev.emojicalendar.presentation.core.CalendarDateStorageValue
+import ru.agrachev.emojicalendar.presentation.widget.modal.ItemIndex
 import ru.agrachev.emojicalendar.presentation.model.CalendarRuleUILayout
 import ru.agrachev.emojicalendar.presentation.model.MainCalendarDateUIModel
-import ru.agrachev.emojicalendar.presentation.screen.ItemIndex
 
 internal sealed interface EmojiCalendarMessage {
 

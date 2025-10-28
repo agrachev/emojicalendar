@@ -2,21 +2,17 @@ package ru.agrachev.emojicalendar.presentation.scope.browser
 
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import ru.agrachev.emojicalendar.presentation.screen.getSelectedItemInvisibilityFraction
-import ru.agrachev.emojicalendar.presentation.widget.DragHandleAnchors
+import ru.agrachev.emojicalendar.presentation.core.DragHandleAnchors
+import ru.agrachev.emojicalendar.presentation.widget.modal.getSelectedItemInvisibilityFraction
 import kotlin.math.max
 
 internal abstract class EventBrowserStatefulScope internal constructor() : EventBrowserScope {
-
-    abstract override val emojiRowListState: LazyListState
-    abstract override var selectedIndex: Int
 
     internal lateinit var pressOffsetState: State<Float>
     internal lateinit var shouldDisplayExtraRowState: State<Boolean>
@@ -30,9 +26,9 @@ internal abstract class EventBrowserStatefulScope internal constructor() : Event
     )
     override var fullExpandedAnchorOffset by mutableFloatStateOf(0f)
     override var partiallyExpandedAnchorOffset by mutableFloatStateOf(1f)
-    override var iconVisibilityFraction by mutableFloatStateOf(0f)
-    override val vis by derivedStateOf {
-        iconVisibilityFraction >= .5f
+    override var emojiIconVisibilityFraction by mutableFloatStateOf(0f)
+    override val isEmojiIconVisible by derivedStateOf {
+        emojiIconVisibilityFraction >= .5f
     }
     override var isTitleLayoutPressed by mutableStateOf(false)
     override val pressOffset: Float
@@ -58,7 +54,7 @@ internal abstract class EventBrowserStatefulScope internal constructor() : Event
 
     override fun selectItem(index: Int) {
         selectedIndex = index
-        iconVisibilityFraction =
+        emojiIconVisibilityFraction =
             emojiRowListState.layoutInfo.getSelectedItemInvisibilityFraction(index)
     }
 }

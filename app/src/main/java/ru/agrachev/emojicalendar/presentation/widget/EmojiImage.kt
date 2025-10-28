@@ -9,13 +9,18 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 
+const val EMOJI_IMAGE_SCALE_FACTOR_DEFAULT = 2f
+const val EMOJI_IMAGE_TOP_LEFT_X_OFFSET_SCALE = .5f
+const val EMOJI_IMAGE_TOP_LEFT_Y_OFFSET_SCALE = .35f
+
+
 @Composable
 fun EmojiImage(
     emoji: String,
     modifier: Modifier = Modifier,
-    scaleFactor: Float = 2f,
-    topLeftXOffsetScale: Float = .5f,
-    topLeftYOffsetScale: Float = .35f,
+    scaleFactor: Float = EMOJI_IMAGE_SCALE_FACTOR_DEFAULT,
+    topLeftXOffsetScale: Float = EMOJI_IMAGE_TOP_LEFT_X_OFFSET_SCALE,
+    topLeftYOffsetScale: Float = EMOJI_IMAGE_TOP_LEFT_Y_OFFSET_SCALE,
 ) {
     val textMeasurer = LocalTextMeasurer.current
     Canvas(

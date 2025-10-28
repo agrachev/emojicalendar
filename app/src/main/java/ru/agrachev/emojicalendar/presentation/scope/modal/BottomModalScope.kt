@@ -1,10 +1,10 @@
 package ru.agrachev.emojicalendar.presentation.scope.modal
 
 import kotlinx.coroutines.flow.Flow
+import ru.agrachev.emojicalendar.presentation.widget.modal.ItemIndex
 import ru.agrachev.emojicalendar.presentation.model.CalendarRuleUILayout
 import ru.agrachev.emojicalendar.presentation.model.CalendarRuleUIModel
 import ru.agrachev.emojicalendar.presentation.model.EmojiCalendarUIModel
-import ru.agrachev.emojicalendar.presentation.screen.ItemIndex
 
 internal typealias PendingRuleProvider = () -> CalendarRuleUIModel?
 

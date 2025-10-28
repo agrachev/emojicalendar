@@ -1,4 +1,4 @@
-package ru.agrachev.emojicalendar.presentation.screen
+package ru.agrachev.emojicalendar.presentation.widget.modal
 
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
@@ -73,13 +73,14 @@ import kotlinx.coroutines.launch
 import ru.agrachev.emojicalendar.R
 import ru.agrachev.emojicalendar.domain.core.toFloat
 import ru.agrachev.emojicalendar.domain.model.CalendarEvent
+import ru.agrachev.emojicalendar.presentation.core.DragHandleAnchors
 import ru.agrachev.emojicalendar.presentation.core.bounceHigh
 import ru.agrachev.emojicalendar.presentation.scope.browser.EventBrowserScope
 import ru.agrachev.emojicalendar.presentation.scope.browser.EventBrowserStatefulScope
 import ru.agrachev.emojicalendar.presentation.theme.EmojiCalendarTheme
 import ru.agrachev.emojicalendar.presentation.theme.Typography
 import ru.agrachev.emojicalendar.presentation.toIntPx
-import ru.agrachev.emojicalendar.presentation.widget.DragHandleAnchors
+import ru.agrachev.emojicalendar.presentation.widget.EMOJI_IMAGE_TOP_LEFT_Y_OFFSET_SCALE
 import ru.agrachev.emojicalendar.presentation.widget.EmojiImage
 import kotlin.math.abs
 
@@ -121,7 +122,7 @@ fun EventListBrowserModalScreen(
                     emojiRowListState.layoutInfo
                 }
                     .collect {
-                        iconVisibilityFraction =
+                        emojiIconVisibilityFraction =
                             it.getSelectedItemInvisibilityFraction(selectedIndex)
                     }
             }
@@ -296,7 +297,7 @@ private fun EventBrowserScope.CalendarEventDescriptionLayout(
         }
         val scope = rememberCoroutineScope()
         AnimatedVisibility(
-            visible = vis,
+            visible = isEmojiIconVisible,
             enter = slideInHorizontally { it } + fadeIn(),
             exit = slideOutHorizontally { it } + fadeOut(),
             modifier = Modifier
@@ -347,12 +348,14 @@ private fun EventBrowserScope.EmojiList(
                         selectedIndex == index
                     }
                 }
+                val yOffsetScale = EMOJI_IMAGE_TOP_LEFT_Y_OFFSET_SCALE
                 val bounceOffset by animateIntAsState(
-                    targetValue = if (isSelected) (-.35f * 100.dp.toIntPx()).toInt() else 0,
+                    targetValue = if (isSelected) (-yOffsetScale * 100.dp.toIntPx()).toInt() else 0,
                     animationSpec = bounceHigh(),
                 )
                 EmojiImage(
                     emoji = calendarEvents[index].emoji,
+                    topLeftYOffsetScale = yOffsetScale,
                     scaleFactor = .9f,
                     modifier = Modifier
                         .size(100.dp)

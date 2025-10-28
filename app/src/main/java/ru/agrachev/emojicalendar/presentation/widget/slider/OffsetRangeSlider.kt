@@ -1,4 +1,4 @@
-package ru.agrachev.emojicalendar.presentation.widget
+package ru.agrachev.emojicalendar.presentation.widget.slider
 
 import androidx.annotation.IntRange
 import androidx.compose.animation.core.Animatable

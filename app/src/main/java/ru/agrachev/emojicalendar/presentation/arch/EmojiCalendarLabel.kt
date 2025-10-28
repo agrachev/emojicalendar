@@ -1,6 +1,6 @@
 package ru.agrachev.emojicalendar.presentation.arch
 
-import ru.agrachev.emojicalendar.presentation.screen.ItemIndex
+import ru.agrachev.emojicalendar.presentation.widget.modal.ItemIndex
 
 sealed interface EmojiCalendarLabel {
 

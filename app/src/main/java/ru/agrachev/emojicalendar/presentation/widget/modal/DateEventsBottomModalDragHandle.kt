@@ -1,4 +1,4 @@
-package ru.agrachev.emojicalendar.presentation.widget
+package ru.agrachev.emojicalendar.presentation.widget.modal
 
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
@@ -13,6 +13,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import ru.agrachev.emojicalendar.presentation.core.DragHandleAnchors
 import ru.agrachev.emojicalendar.presentation.toIntPx
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,9 +47,4 @@ fun DateEventsBottomModalDragHandle(
 
         }
     }
-}
-
-enum class DragHandleAnchors {
-    COLLAPSED,
-    EXPANDED,
 }

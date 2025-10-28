@@ -1,4 +1,4 @@
-package ru.agrachev.emojicalendar.presentation.screen
+package ru.agrachev.emojicalendar.presentation.widget.modal
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text

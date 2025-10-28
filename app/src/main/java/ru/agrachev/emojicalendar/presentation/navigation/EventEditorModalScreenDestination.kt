@@ -5,11 +5,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.mapNotNull
+import ru.agrachev.emojicalendar.presentation.widget.modal.EventEditorModalScreen
 import ru.agrachev.emojicalendar.presentation.model.MainCalendarDateUIModel
 import ru.agrachev.emojicalendar.presentation.model.emptyCalendarRuleUIModel
 import ru.agrachev.emojicalendar.presentation.scope.modal.BottomModalScope
 import ru.agrachev.emojicalendar.presentation.scope.modal.PendingRuleProvider
-import ru.agrachev.emojicalendar.presentation.screen.EventEditorModalScreen
 
 @Composable
 internal fun BottomModalScope.EventEditorModalScreenDestination(

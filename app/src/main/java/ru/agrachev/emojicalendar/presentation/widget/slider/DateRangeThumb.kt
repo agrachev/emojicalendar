@@ -1,4 +1,4 @@
-package ru.agrachev.emojicalendar.presentation.widget
+package ru.agrachev.emojicalendar.presentation.widget.slider
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.toOffset
 import androidx.compose.ui.util.lerp
 import org.koin.core.parameter.parametersOf
 import org.koin.java.KoinJavaComponent.inject
+import ru.agrachev.emojicalendar.presentation.widget.LocalTextMeasurer
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 

@@ -1,4 +1,4 @@
-package ru.agrachev.emojicalendar.presentation.widget
+package ru.agrachev.emojicalendar.presentation.widget.modal
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -32,7 +32,6 @@ import ru.agrachev.emojicalendar.presentation.navigation.EventEditorModalScreenD
 import ru.agrachev.emojicalendar.presentation.scope.modal.BottomModalScope
 import ru.agrachev.emojicalendar.presentation.scope.modal.DateEventsBottomModalScope
 import ru.agrachev.emojicalendar.presentation.scope.modal.PendingRuleProvider
-import ru.agrachev.emojicalendar.presentation.screen.EventBrowserModalScreen
 import ru.agrachev.emojicalendar.presentation.viewmodel.CalendarMviStateHolder
 
 @OptIn(ExperimentalMaterial3Api::class)

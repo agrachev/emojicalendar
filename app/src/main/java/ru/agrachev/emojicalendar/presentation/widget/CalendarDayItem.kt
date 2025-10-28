@@ -122,7 +122,7 @@ inline fun CalendarDayItem(
         Canvas(
             modifier = Modifier
                 .size(4.dp)
-                .offset(y = 16.dp)
+                .offset(y = 24.dp)
                 .align(Alignment.BottomStart)
         ) {
             drawCircle(
