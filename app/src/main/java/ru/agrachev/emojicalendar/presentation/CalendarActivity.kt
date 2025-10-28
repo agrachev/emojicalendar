@@ -85,6 +85,7 @@ import ru.agrachev.emojicalendar.presentation.widget.CalendarMonthItem
 import ru.agrachev.emojicalendar.presentation.widget.DateEventsBottomModal
 import ru.agrachev.emojicalendar.presentation.widget.LocalTextMeasurer
 import ru.agrachev.emojicalendar.presentation.widget.MonthItemLayout
+import ru.agrachev.emojicalendar.presentation.widget.YearMonthItemContentType
 import ru.agrachev.emojicalendar.presentation.widget.YearMonthLazyRow
 import java.util.Locale
 import kotlin.math.abs
@@ -116,6 +117,11 @@ fun EmojiCalendar(viewModel: CalendarMviStateHolder) {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle(
                 initialValue = viewModel.initialUiState,
             )
+            val mainCalendarUIModel by remember {
+                derivedStateOf {
+                    uiState.mainCalendarUIModel
+                }
+            }
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
             ) { innerPadding ->
@@ -124,7 +130,7 @@ fun EmojiCalendar(viewModel: CalendarMviStateHolder) {
                 }) {
                     MainCalendar(
                         calendarUiModelProvider = {
-                            uiState.mainCalendarUIModel
+                            mainCalendarUIModel
                         },
                         modifier = Modifier
                             .padding(innerPadding),
@@ -237,7 +243,7 @@ private fun MainCalendarScope.YearMonthRow() {
                 // TODO rework scrolling logic
                 lazyRowState.animateScrollToItem(
                     currentMonth + currentMonthIndex.regularOffset + 1 *
-                            (if (lazyRowState.layoutInfo.visibleItemsInfo[3].contentType == "yearTile") 1 else 0)
+                            (if (lazyRowState.layoutInfo.visibleItemsInfo[3].contentType == YearMonthItemContentType.YEAR) 1 else 0)
                 )
             }
     }
@@ -335,12 +341,12 @@ private fun MainCalendarScope.CalendarGrid(
                                             index = time,
                                             width = 1.dp,
                                             color = MaterialTheme.colorScheme.outlineVariant,
-                                        )
-                                        .then(model?.let {
-                                            Modifier.clickable {
-                                                openModalRequest(model)
-                                            }
-                                        } ?: Modifier)
+                                        ) then (
+                                            model?.let {
+                                                Modifier.clickable {
+                                                    openModalRequest(model)
+                                                }
+                                            } ?: Modifier)
                                 )
                             }
                         }
@@ -398,20 +404,18 @@ fun GreetingPreview() {
 }
 
 fun Modifier.customBorder(index: Int, width: Dp, color: Color): Modifier =
-    this.then(
-        Modifier.drawWithContent {
-            drawContent()
-            drawLine(color, Offset.Zero, Offset(size.width, 0f), strokeWidth = width.toPx())
-            if (index % 7 != 6) {
-                drawLine(
-                    color,
-                    Offset(size.width, 0f),
-                    Offset(size.width, size.height),
-                    strokeWidth = width.toPx()
-                )
-            }
+    this then Modifier.drawWithContent {
+        drawContent()
+        drawLine(color, Offset.Zero, Offset(size.width, 0f), strokeWidth = width.toPx())
+        if (index % 7 != 6) {
+            drawLine(
+                color,
+                Offset(size.width, 0f),
+                Offset(size.width, size.height),
+                strokeWidth = width.toPx()
+            )
         }
-    )
+    }
 
 @Composable
 fun Modifier.shimmer(cornerRadius: Dp = 0.dp): Modifier {

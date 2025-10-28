@@ -61,12 +61,10 @@ fun DateEventsBottomModal(
         NavHost(
             navController = navController,
             startDestination = DateEventsDestination.EventBrowser.route,
-            modifier = Modifier
-                .then(
+            modifier = Modifier then
                     if (!isKeyboardVisible) Modifier.animateContentSize(
                         animationSpec = tween(250)
                     ) else Modifier
-                ),
         ) {
             composable(
                 route = DateEventsDestination.EventBrowser.route,

@@ -19,25 +19,23 @@ fun EmojiImage(
 ) {
     val textMeasurer = LocalTextMeasurer.current
     Canvas(
-        modifier = modifier.then(
-            Modifier
-                .drawWithCache {
-                    val measuredText =
-                        textMeasurer.measure(
-                            text = AnnotatedString(text = emoji),
-                            style = TextStyle(fontSize = size.width.toSp() * scaleFactor),
-                        )
-                    onDrawBehind {
-                        drawText(
-                            textLayoutResult = measuredText,
-                            topLeft = Offset(
-                                x = -(measuredText.size.width - size.width) * topLeftXOffsetScale,
-                                y = measuredText.size.height * topLeftYOffsetScale,
-                            ),
-                        )
-                    }
+        modifier = modifier then Modifier
+            .drawWithCache {
+                val measuredText =
+                    textMeasurer.measure(
+                        text = AnnotatedString(text = emoji),
+                        style = TextStyle(fontSize = size.width.toSp() * scaleFactor),
+                    )
+                onDrawBehind {
+                    drawText(
+                        textLayoutResult = measuredText,
+                        topLeft = Offset(
+                            x = -(measuredText.size.width - size.width) * topLeftXOffsetScale,
+                            y = measuredText.size.height * topLeftYOffsetScale,
+                        ),
+                    )
                 }
-        )
+            }
     ) {
 
     }

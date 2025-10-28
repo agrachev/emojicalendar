@@ -1,9 +1,7 @@
 package ru.agrachev.emojicalendar.presentation.widget
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -38,6 +36,7 @@ import ru.agrachev.emojicalendar.domain.core.Constants.WEEK_DAY_COUNT
 import ru.agrachev.emojicalendar.domain.model.CalendarEvent
 import ru.agrachev.emojicalendar.presentation.core.Constants.NOW_INDEX
 import ru.agrachev.emojicalendar.presentation.core.LocalDateProvider
+import ru.agrachev.emojicalendar.presentation.core.bounceLow
 import ru.agrachev.emojicalendar.presentation.core.regularOffset
 import ru.agrachev.emojicalendar.presentation.model.MainCalendarDateUIModel
 import ru.agrachev.emojicalendar.presentation.shimmer
@@ -59,14 +58,11 @@ fun CalendarMonthItem(
         animationSpec = tween(300),
     )
     Box(
-        modifier = modifier
-            .then(
-                Modifier
-                    .clipToBounds()
-                    .graphicsLayer {
-                        this.alpha = alpha
-                    },
-            ),
+        modifier = modifier then Modifier
+            .clipToBounds()
+            .graphicsLayer {
+                this.alpha = alpha
+            },
     ) {
         val textMeasurer = LocalTextMeasurer.current
         val density = LocalDensity.current
@@ -96,10 +92,7 @@ fun CalendarMonthItem(
                 modifier = Modifier
                     .fillMaxSize(),
                 enter = fadeIn() + slideInVertically(
-                    animationSpec = spring(
-                        dampingRatio = .7f,
-                        stiffness = Spring.StiffnessMedium
-                    )
+                    animationSpec = bounceLow(),
                 ) { it }
             ) {
                 EmojiImage(

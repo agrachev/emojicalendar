@@ -32,15 +32,12 @@ fun DateEventsBottomModalDragHandle(
         )
     }
     BottomSheetDefaults.DragHandle(
-        modifier = modifier
-            .then(
-                Modifier.anchoredDraggable(
-                    state = anchoredDraggableState,
-                    reverseDirection = true,
-                    orientation = Orientation.Vertical,
-                    enabled = heightGrowthDeltaPx > 0f,
-                )
-            ),
+        modifier = modifier then Modifier.anchoredDraggable(
+            state = anchoredDraggableState,
+            reverseDirection = true,
+            orientation = Orientation.Vertical,
+            enabled = heightGrowthDeltaPx > 0f,
+        ),
     )
     LaunchedEffect(anchoredDraggableState) {
         snapshotFlow {

@@ -86,34 +86,32 @@ fun EmojiCalendarTextField(
         state = textFieldState,
         lineLimits = TextFieldLineLimits.SingleLine,
         textStyle = textStyle,
-        modifier = modifier.then(
-            Modifier
-                .drawBehind {
-                    drawLine(
-                        color = indicatorColor,
-                        start = Offset(0f, size.height),
-                        end = Offset(size.width, size.height),
-                        strokeWidth = Stroke.DefaultMiter,
+        modifier = modifier then Modifier
+            .drawBehind {
+                drawLine(
+                    color = indicatorColor,
+                    start = Offset(0f, size.height),
+                    end = Offset(size.width, size.height),
+                    strokeWidth = Stroke.DefaultMiter,
+                )
+                if (hintText.isNotEmpty() && isEmpty) {
+                    drawText(
+                        textLayoutResult = measuredText,
+                        color = if (isValid) {
+                            colors.disabledTextColor
+                        } else {
+                            colors.errorIndicatorColor
+                        },
                     )
-                    if (hintText.isNotEmpty() && isEmpty) {
-                        drawText(
-                            textLayoutResult = measuredText,
-                            color = if (isValid) {
-                                colors.disabledTextColor
-                            } else {
-                                colors.errorIndicatorColor
-                            },
-                        )
-                    }
                 }
-                .onFocusChanged { focusState ->
-                    fieldState = choose(
-                        isValid = isValid,
-                        isFocused = focusState.isFocused.apply {
-                            isFocused = this
-                        })
-                }
-        ),
+            }
+            .onFocusChanged { focusState ->
+                fieldState = choose(
+                    isValid = isValid,
+                    isFocused = focusState.isFocused.apply {
+                        isFocused = this
+                    })
+            },
     )
 }
 

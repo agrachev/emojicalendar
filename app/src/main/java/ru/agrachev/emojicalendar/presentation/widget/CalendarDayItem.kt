@@ -5,7 +5,6 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -37,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import ru.agrachev.emojicalendar.domain.core.Constants.WEEK_DAY_COUNT
+import ru.agrachev.emojicalendar.presentation.core.bounceLow
 import ru.agrachev.emojicalendar.presentation.model.CalendarEventUIModel
 import ru.agrachev.emojicalendar.presentation.toIntPx
 
@@ -53,15 +53,11 @@ inline fun CalendarDayItem(
     val isSelected = isItemSelectedCallback()
     val borderWidth by animateFloatAsState(
         targetValue = (if (isSelected) 3.dp else 2.dp).toIntPx().toFloat(),
-        animationSpec = spring(
-            dampingRatio = .7f,
-        )
+        animationSpec = bounceLow(),
     )
     val borderColor by animateColorAsState(
         targetValue = if (isSelected) Color.Black else TextFieldDefaults.colors().disabledTextColor,
-        animationSpec = spring(
-            dampingRatio = .7f,
-        )
+        animationSpec = bounceLow(),
     )
     val emoji by rememberUpdatedState(calendarEvent?.emoji.orEmpty())
     Box(
@@ -105,15 +101,11 @@ inline fun CalendarDayItem(
                 transitionSpec = {
                     (slideIntoContainer(
                         towards = AnimatedContentTransitionScope.SlideDirection.Up,
-                        animationSpec = spring(
-                            dampingRatio = 0.7f,
-                        ),
+                        animationSpec = bounceLow(),
                     ) togetherWith
                             slideOutOfContainer(
                                 towards = AnimatedContentTransitionScope.SlideDirection.Down,
-                                animationSpec = spring(
-                                    dampingRatio = 0.7f,
-                                ),
+                                animationSpec = bounceLow(),
                             ))
                         .using(
                             SizeTransform(clip = false)

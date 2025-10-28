@@ -15,9 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.emoji2.emojipicker.EmojiPickerView
-import androidx.emoji2.emojipicker.R as Re
 import androidx.recyclerview.widget.RecyclerView
 import ru.agrachev.emojicalendar.R
+import androidx.emoji2.emojipicker.R as Re
 
 @Composable
 fun EmojiPicker(
@@ -32,15 +32,12 @@ fun EmojiPicker(
     val onEmojiPickedCallbackState = rememberUpdatedState(onEmojiPicked)
 
     AndroidView(
-        modifier = modifier
-            .then(
-                Modifier
-                    .pointerInput(Unit) {
-                        detectVerticalDragGestures { change, dragAmount ->
-                            lastDragAmount = -dragAmount
-                        }
-                    }
-            ),
+        modifier = modifier then Modifier
+            .pointerInput(Unit) {
+                detectVerticalDragGestures { change, dragAmount ->
+                    lastDragAmount = -dragAmount
+                }
+            },
         factory = {
             EmojiPickerView(ContextThemeWrapper(it, R.style.EmojiPickerViewStyle))
                 .apply {

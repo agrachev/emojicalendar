@@ -53,26 +53,24 @@ fun RepeatButton(
     val scope = rememberCoroutineScope()
     Box(
         contentAlignment = Alignment.Center,
-        modifier = modifier.then(
-            Modifier
-                .clickable(
-                    interactionSource = null,
-                    indication = null,
-                    onClick = {
-                        scope.launch {
-                            anim.animateTo(
-                                targetValue = ceil(anim.value) + 1f,
-                                animationSpec = tween(
-                                    durationMillis = 300,
-                                ),
-                            )
-                        }
-                        recurrenceRuleButtonState.toggleNext(
-                            onNextCallback = onRepeatModeChanged,
+        modifier = modifier then Modifier
+            .clickable(
+                interactionSource = null,
+                indication = null,
+                onClick = {
+                    scope.launch {
+                        anim.animateTo(
+                            targetValue = ceil(anim.value) + 1f,
+                            animationSpec = tween(
+                                durationMillis = 300,
+                            ),
                         )
                     }
-                )
-        ),
+                    recurrenceRuleButtonState.toggleNext(
+                        onNextCallback = onRepeatModeChanged,
+                    )
+                }
+            ),
     ) {
         Image(
             painter = painterResource(R.drawable.ic_repeat),

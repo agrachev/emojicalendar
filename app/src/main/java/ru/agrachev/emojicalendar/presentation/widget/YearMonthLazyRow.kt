@@ -14,9 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import ru.agrachev.emojicalendar.domain.core.Constants.MONTH_COUNT
 import ru.agrachev.emojicalendar.domain.core.plus
 import ru.agrachev.emojicalendar.domain.core.toInt
-import java.time.Month
 
 private const val MARGIN = 2
 
@@ -67,16 +67,25 @@ fun YearMonthLazyRow(
         overscrollEffect = null,
     ) {
         for (times in range) {
-            stickyHeader(key = 0 + times * 13, contentType = "yearTile") {
+            val yearTileIndex = times * (MONTH_COUNT + 1)
+            stickyHeader(
+                key = yearTileIndex,
+                contentType = YearMonthItemContentType.YEAR,
+            ) {
                 stickyHeaderContent(times, tileModifier)
             }
             items(
-                Month.entries.size,
-                key = { (it + 1) + times * 13 },
-                contentType = { "monthTile" }
+                count = MONTH_COUNT,
+                key = { yearTileIndex + (it + 1) },
+                contentType = { YearMonthItemContentType.MONTH },
             ) {
                 itemContent(it, tileModifier)
             }
         }
     }
+}
+
+enum class YearMonthItemContentType {
+    YEAR,
+    MONTH,
 }

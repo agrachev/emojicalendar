@@ -53,49 +53,47 @@ fun DateRangeThumb(
             }
         }
         Spacer(
-            modifier = modifier.then(
-                Modifier
-                    .offset {
-                        IntOffset(
-                            x = -(contentWidthPx.toInt() - with(density) { 16.dp.roundToPx() }) / 2,
-                            y = 0,
+            modifier = modifier then Modifier
+                .offset {
+                    IntOffset(
+                        x = -(contentWidthPx.toInt() - with(density) { 16.dp.roundToPx() }) / 2,
+                        y = 0,
+                    )
+                }
+                .drawWithCache {
+                    val measuredText = textMeasurer.measure(
+                        text = thumbState.dateLabel,
+                        style = TextStyle(
+                            color = Color.White,
+                            fontSize = with(density) {
+                                (scope.minHeight * .7f).toSp()
+                            },
                         )
-                    }
-                    .drawWithCache {
-                        val measuredText = textMeasurer.measure(
-                            text = thumbState.dateLabel,
-                            style = TextStyle(
-                                color = Color.White,
-                                fontSize = with(density) {
-                                    (scope.minHeight * .7f).toSp()
-                                },
-                            )
+                    )
+                    onDrawBehind {
+                        drawRoundRect(
+                            color = Color.Red,
+                            size = size.copy(
+                                width = contentWidthPx,
+                            ),
+                            cornerRadius = CornerRadius(x = size.height / 2f),
                         )
-                        onDrawBehind {
-                            drawRoundRect(
-                                color = Color.Red,
-                                size = size.copy(
-                                    width = contentWidthPx,
-                                ),
-                                cornerRadius = CornerRadius(x = size.height / 2f),
+                        val ratio = contentWidth / scope.minWidth
+                        if (ratio > 1f) {
+                            drawText(
+                                textLayoutResult = measuredText,
+                                alpha = lerp(0f, 1f, ratio / thumbState.expandRatio),
+                                topLeft = Alignment.Center.align(
+                                    size = measuredText.size,
+                                    space = size.copy(
+                                        width = contentWidthPx,
+                                    ).toIntSize(),
+                                    layoutDirection = layoutDirection,
+                                ).toOffset(),
                             )
-                            val ratio = contentWidth / scope.minWidth
-                            if (ratio > 1f) {
-                                drawText(
-                                    textLayoutResult = measuredText,
-                                    alpha = lerp(0f, 1f, ratio / thumbState.expandRatio),
-                                    topLeft = Alignment.Center.align(
-                                        size = measuredText.size,
-                                        space = size.copy(
-                                            width = contentWidthPx,
-                                        ).toIntSize(),
-                                        layoutDirection = layoutDirection,
-                                    ).toOffset(),
-                                )
-                            }
                         }
                     }
-            ),
+                },
         )
     }
 }

@@ -7,6 +7,8 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -29,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -38,8 +41,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -238,7 +243,8 @@ fun EventEditorModalScreen(
             LazyRow(
                 state = calendarRowState,
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .clearFocusOnTap(),
             ) {
                 items(count = INFINITE, key = { it }) { index ->
                     CalendarDayItem(
@@ -286,15 +292,11 @@ fun EventEditorModalScreen(
                 modifier = Modifier
                     .width(contentWidth)
                     .offset(x = (layoutWidth - contentWidth) / 2 - 8.dp, y = 8.dp)
-                    .then(
-                        Modifier
-                            .moveWithList(
-                                listState = calendarRowState,
-                                firstVisibleItemOffset = offsetRangeSliderState.startOffsetValue - tileIndexOffset,
-                            )
-                    ).apply {
-                        println(this)
-                    }
+                    .clearFocusOnTap()
+                    .moveWithList(
+                        listState = calendarRowState,
+                        firstVisibleItemOffset = offsetRangeSliderState.startOffsetValue - tileIndexOffset,
+                    )
             )
             EmojiPicker(
                 gridColumns = 8,
@@ -304,6 +306,7 @@ fun EventEditorModalScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
+                    .clearFocusOnTap(),
             )
         }
     }
@@ -388,6 +391,7 @@ private inline fun EventEditorScreenScope.ModalHeadingRow(
             modifier = Modifier
                 .fillMaxHeight()
                 .aspectRatio(1f)
+                .clearFocusOnTap(),
         ) {
             Image(
                 painter = painterResource(android.R.drawable.ic_menu_save),
@@ -438,6 +442,7 @@ private fun EventEditorScreenScope.EventTitleRow(
             modifier = Modifier
                 .fillMaxHeight()
                 .aspectRatio(1f)
+                .clearFocusOnTap(),
         )
     }
     LaunchedEffect(state) {
@@ -510,11 +515,9 @@ fun Modifier.moveWithList(
                 }
         }
     }
-    return this.then(
-        Modifier.offset {
-            IntOffset(x = viewOffset, y = 0)
-        }
-    )
+    return this then Modifier.offset {
+        IntOffset(x = viewOffset, y = 0)
+    }
 }
 
 sealed class CalendarRuleUiModelUpdater(
@@ -654,3 +657,15 @@ private fun EventEditorScreenScope.rememberEmojiPickedCallbackBuilder() = rememb
 
 private inline val CalendarEventUIModel?.title
     get() = this?.title.orEmpty()
+
+@Composable
+@ReadOnlyComposable
+private fun Modifier.clearFocusOnTap() = LocalFocusManager.current.let { focusManager ->
+    this then Modifier
+        .pointerInput(Unit) {
+            awaitEachGesture {
+                awaitFirstDown(false)
+                focusManager.clearFocus()
+            }
+        }
+}
