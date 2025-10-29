@@ -18,8 +18,12 @@ dependencies {
 
     implementation(project.dependencies.platform(libs.koin.bom))
     implementation(libs.koin.core)
+    testImplementation(libs.koin.test)
 
     implementation(libs.threeten.extra)
 
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.strikt.core)
 }

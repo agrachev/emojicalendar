@@ -39,13 +39,19 @@ android {
 
 dependencies {
     implementation(project(":calendar-domain"))
+    implementation(libs.androidx.runner)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
+    testImplementation(libs.strikt.core)
+    androidTestImplementation(libs.strikt.core)
 
     implementation(project.dependencies.platform(libs.koin.bom))
     implementation(libs.koin.core)
     implementation(libs.koin.android)
+    testImplementation(libs.koin.test)
+    testImplementation(libs.mockk)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.room.compiler)

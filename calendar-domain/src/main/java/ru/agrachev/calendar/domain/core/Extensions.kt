@@ -1,5 +1,7 @@
 package ru.agrachev.calendar.domain.core
 
+import kotlin.math.abs
+
 fun Boolean.toInt() = this.compareTo(false)
 fun Boolean.toFloat() = this.toInt().toFloat()
 
@@ -23,7 +25,7 @@ operator fun IntRange.plus(value: Int) = IntRange(
 operator fun IntRange.minus(value: Int) = this + -value
 
 inline val <T> T.length where T : ClosedRange<out Int>
-    get() = this.endInclusive - this.start
+    get() = abs(this.endInclusive - this.start)
 
 inline val Float.fraction
     get() = this % 1f

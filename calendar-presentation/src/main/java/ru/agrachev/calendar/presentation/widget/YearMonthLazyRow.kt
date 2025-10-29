@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import ru.agrachev.calendar.domain.core.Constants.MONTH_COUNT
+import ru.agrachev.calendar.domain.core.plus
 import ru.agrachev.calendar.domain.core.toInt
 
 private const val MARGIN = 2
@@ -47,7 +48,7 @@ fun YearMonthLazyRow(
                         it.index >= totalItemsCount - MARGIN
                     } ?: false
                     if (addHead || addTail) {
-                        range + IntRange(
+                        range += IntRange(
                             start = -addHead.toInt(),
                             endInclusive = addTail.toInt(),
                         )

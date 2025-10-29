@@ -64,7 +64,6 @@ dependencies {
     implementation(libs.androidx.compose.material)
     implementation(libs.androidx.compose.runtime)
 
-    implementation(libs.threeten.extra)
     implementation(libs.androidx.emoji2.emojipicker)
     implementation(libs.androidx.recyclerview)
 
@@ -77,10 +76,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation(libs.androidx.emoji2)
-    implementation(libs.androidx.emoji2.views)
-    implementation(libs.androidx.emoji2.views.helper)
-
     implementation(libs.mvikotlin)
     implementation(libs.mvikotlin.main)
     implementation(libs.mvikotlin.extensions.coroutines)
@@ -90,6 +85,5 @@ dependencies {
     implementation(project.dependencies.platform(libs.koin.bom))
     implementation(libs.koin.core)
     implementation(libs.koin.android)
-
 
 }

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.zip
 import ru.agrachev.calendar.domain.model.CalendarDate
 import ru.agrachev.calendar.domain.repository.CalendarDataRepository
 import ru.agrachev.calendar.domain.repository.CalendarEventsRepository
+import java.time.LocalDate
 
 class FetchMonthDataUseCase(
     private val calendarDataRepository: CalendarDataRepository,
@@ -21,8 +22,11 @@ class FetchMonthDataUseCase(
 ) {
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    suspend operator fun invoke(offsetFromCurrentMonth: Int): List<CalendarDate> =
-        flowOf(calendarDataRepository.requestDates(offsetFromCurrentMonth))
+    suspend operator fun invoke(
+        offsetFromCurrentMonth: Int,
+        originDate: LocalDate = LocalDate.now(),
+    ): List<CalendarDate> =
+        flowOf(calendarDataRepository.requestDates(offsetFromCurrentMonth, originDate))
             .zip(
                 calendarEventsRepository.getAllCalendarEvents()
                     .flowOn(dbCoroutineDispatcher)

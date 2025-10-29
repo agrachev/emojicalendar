@@ -19,11 +19,11 @@ internal sealed interface EmojiCalendarMessage {
 
     object EventsBrowserModalDismissed : EmojiCalendarMessage
 
-    data class PendingRuleUpdated(
+    data class PendingRuleSelected(
         val itemIndex: ItemIndex,
     ) : EmojiCalendarMessage
 
-    data class PendingRuleUpdated2(
+    data class PendingRuleUpdated(
         val pendingRuleUpdater: CalendarRuleUILayout,
     ) : EmojiCalendarMessage
 

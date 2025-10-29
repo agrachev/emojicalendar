@@ -30,7 +30,7 @@ internal class EmojiCalendarReducer : Reducer<EmojiCalendarUIModel, EmojiCalenda
                 eventsBrowserUIModel = null,
             )
 
-            is EmojiCalendarMessage.PendingRuleUpdated -> copy(
+            is EmojiCalendarMessage.PendingRuleSelected -> copy(
                 eventsBrowserUIModel = eventsBrowserUIModel?.copy(
                     pendingRule = with(eventsBrowserUIModel.scheduledEvents) {
                         this.getOrNull(msg.itemIndex.index)?.rule?.toPresentationModel()
@@ -39,7 +39,7 @@ internal class EmojiCalendarReducer : Reducer<EmojiCalendarUIModel, EmojiCalenda
                 )
             )
 
-            is EmojiCalendarMessage.PendingRuleUpdated2 -> copy(
+            is EmojiCalendarMessage.PendingRuleUpdated -> copy(
                 eventsBrowserUIModel = eventsBrowserUIModel?.copy(
                     pendingRule = with(msg.pendingRuleUpdater) {
                         eventsBrowserUIModel.pendingRule?.copy(

@@ -1,45 +1,46 @@
-package ru.agrachev.calendar.data
+package ru.agrachev.calendar.data.repository
 
-import org.junit.Assert
-import org.junit.BeforeClass
 import org.junit.Test
-import ru.agrachev.calendar.domain.core.Constants.MONTH_COUNT
-import ru.agrachev.calendar.domain.core.Constants.WEEK_DAY_COUNT
-import ru.agrachev.calendar.domain.repository.CalendarDataRepository
-import ru.agrachev.calendar.data.repository.EmojiCalendarDataRepository
+import ru.agrachev.calendar.data.mocks.availableLocales
+import ru.agrachev.calendar.data.mocks.testLocales
+import ru.agrachev.calendar.domain.core.Constants
+import strikt.api.expectThat
+import strikt.assertions.isEqualTo
+import strikt.assertions.isTrue
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.ChronoUnit
-import java.util.Locale
 
 class EmojiCalendarDataRepositoryTest {
 
+    private val dateRepository = EmojiCalendarDataRepository()
+
     @Test
     fun `count of month names is valid and consistent all available locales`() {
-        val isMonthCountValidAndConsistent = AVAILABLE_LOCALES.all { locale ->
-            dateRepository.getLocalizedMonthNames(locale).size == MONTH_COUNT
+        val isMonthCountValidAndConsistent = availableLocales.all { locale ->
+            dateRepository.getLocalizedMonthNames(locale).size == Constants.MONTH_COUNT
         }
-        Assert.assertTrue(isMonthCountValidAndConsistent)
+        expectThat(isMonthCountValidAndConsistent).isTrue()
     }
 
     @Test
     fun `count of week day names is valid and consistent for all available locales`() {
-        val isWeekDayCountValidAndConsistent = AVAILABLE_LOCALES.all { locale ->
-            dateRepository.getLocalizedWeekdayNames(locale).size == WEEK_DAY_COUNT
+        val isWeekDayCountValidAndConsistent = availableLocales.all { locale ->
+            dateRepository.getLocalizedWeekdayNames(locale).size == Constants.WEEK_DAY_COUNT
         }
-        Assert.assertTrue(isWeekDayCountValidAndConsistent)
+        expectThat(isWeekDayCountValidAndConsistent).isTrue()
     }
 
     @Test
     fun `month names output is different for different locales`() {
-        assertArrayOutputUnique(*TEST_LOCALES) {
+        assertArrayOutputUnique(*testLocales) {
             dateRepository.getLocalizedMonthNames(it)
         }
     }
 
     @Test
     fun `week day names output is different for different locales`() {
-        assertArrayOutputUnique(*TEST_LOCALES) {
+        assertArrayOutputUnique(*testLocales) {
             dateRepository.getLocalizedWeekdayNames(it)
         }
     }
@@ -48,7 +49,7 @@ class EmojiCalendarDataRepositoryTest {
     fun `month data payload contains non fractional number of weeks`() {
         isConditionTrueForAllLocaleAndMonthOffsetCombo { dates, _, _ ->
             with(dates.size) {
-                this > 0 && this % WEEK_DAY_COUNT == 0
+                this > 0 && this % Constants.WEEK_DAY_COUNT == 0
             }
         }
     }
@@ -69,7 +70,7 @@ class EmojiCalendarDataRepositoryTest {
                 YearMonth.of(this.year, this.month).atDay(1)
             }
             dates
-                .take(WEEK_DAY_COUNT)
+                .take(Constants.WEEK_DAY_COUNT)
                 .indexOf(firstDayOfMonth) >= 0
         }
     }
@@ -83,7 +84,7 @@ class EmojiCalendarDataRepositoryTest {
         }
             .groupBy { it }
             .size
-        Assert.assertSame(input.size, uniqueOutputs)
+        expectThat(input.size).isEqualTo(uniqueOutputs)
     }
 
     private inline fun isConditionTrueForAllLocaleAndMonthOffsetCombo(
@@ -91,7 +92,7 @@ class EmojiCalendarDataRepositoryTest {
     ) {
         val testDate = LocalDate.of(2025, 1, 1)
         val areAllConditionsTrue =
-            TEST_LOCALES.combine(-MONTH_COUNT / 2..<MONTH_COUNT / 2) { locale, monthOffset ->
+            testLocales.combine(-Constants.MONTH_COUNT / 2..<Constants.MONTH_COUNT / 2) { locale, monthOffset ->
                 condition(
                     dateRepository
                         .requestDates(monthOffset, testDate, locale),
@@ -101,7 +102,7 @@ class EmojiCalendarDataRepositoryTest {
             }
                 .asSequence()
                 .all { it }
-        Assert.assertTrue(areAllConditionsTrue)
+        expectThat(areAllConditionsTrue).isTrue()
     }
 
     private inline fun <T, R, V> Array<out T>.combine(
@@ -115,22 +116,5 @@ class EmojiCalendarDataRepositoryTest {
             }
         }
         return list
-    }
-
-    companion object {
-        val AVAILABLE_LOCALES = Locale.getAvailableLocales()
-            .filterNotNull()
-        val TEST_LOCALES = listOf("us", "ru")
-            .mapNotNull {
-                Locale.forLanguageTag(it)
-            }.toTypedArray()
-
-        lateinit var dateRepository: CalendarDataRepository
-
-        @BeforeClass
-        @JvmStatic
-        fun initDateRepository() {
-            dateRepository = EmojiCalendarDataRepository()
-        }
     }
 }

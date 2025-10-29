@@ -75,7 +75,7 @@ internal class EmojiCalendarExecutor(
 
             is EmojiCalendarIntent.NavigateToItem -> {
                 dispatch(
-                    EmojiCalendarMessage.PendingRuleUpdated(
+                    EmojiCalendarMessage.PendingRuleSelected(
                         itemIndex = intent.itemIndex,
                     )
                 )
@@ -87,7 +87,7 @@ internal class EmojiCalendarExecutor(
             }
 
             is EmojiCalendarIntent.UpdatePendingRule -> dispatch(
-                EmojiCalendarMessage.PendingRuleUpdated2(
+                EmojiCalendarMessage.PendingRuleUpdated(
                     pendingRuleUpdater = intent.pendingRuleUpdater,
                 )
             )
