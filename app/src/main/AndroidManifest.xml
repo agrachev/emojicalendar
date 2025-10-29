@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.EmojiCalendar">
         <activity
-            android:name=".presentation.CalendarActivity"
+            android:name="ru.agrachev.calendar.presentation.CalendarActivity"
             android:exported="true"
             android:theme="@style/Theme.EmojiCalendar">
             <intent-filter>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="EmojiPickerViewStyle" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- The color for selected category icons -->
+        <!-- <item name="colorAccent">#696969</item>-->
+        <!-- The color for unselected category icons -->
+        <!-- <item name="colorControlNormal">#FFC0CB</item>-->
+        <!-- The color for all text -->
+        <!-- <item name="android:textColorPrimary">#696969</item>-->
+        <!-- The text size for category text -->
+        <!-- <item name="android:textSize">12sp</item>-->
+        <!-- The color for variant popup background -->
+        <!-- <item name="colorButtonNormal">#FFC0CB</item>-->
+        <!-- The color for the selected item on the multi-skintone selection -->
+        <!-- <item name="android:colorControlHighlight">#FFA8C7FA</item>-->
+    </style>
+</resources>

@@ -21,4 +21,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "Emoji Calendar"
 include(":app")
- 
+include(":calendar-data")
+include(":calendar-presentation")
+include(":calendar-domain")
