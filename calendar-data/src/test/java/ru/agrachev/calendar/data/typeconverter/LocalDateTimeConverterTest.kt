@@ -8,10 +8,10 @@ import strikt.api.expectThat
 
 class LocalDateTimeConverterTest {
 
-    val localDateTimeConverter = LocalDateTimeConverter()
+    private val localDateTimeConverter = LocalDateTimeConverter()
 
     @Test
-    fun aaa() {
+    fun `local date is properly formatted into ISO-8601 date stamp`() {
         expectCatching {
             val targetString = localDateTimeConverter.toDateString(testDate)
             expectThat(targetString).equals(isoTestDate)
@@ -19,7 +19,7 @@ class LocalDateTimeConverterTest {
     }
 
     @Test
-    fun bbb() {
+    fun `ISO-8601 date stamp is properly parsed into local date`() {
         expectCatching {
             val targetDate = localDateTimeConverter.toDate(isoTestDate)
             expectThat(targetDate).equals(testDate)

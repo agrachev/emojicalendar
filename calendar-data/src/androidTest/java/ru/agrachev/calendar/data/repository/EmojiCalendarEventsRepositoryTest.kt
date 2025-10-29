@@ -159,6 +159,7 @@ private const val calendarRuleInsertQuery =
             "(`rule_id`,`title`,`date_range_start`,`date_range_end_exclusive`,`recurrence_rule`) " +
             "VALUES (?,?,?,?,?)"
 
-private const val calendarEventInsertQuery = "INSERT OR REPLACE INTO `calendar_events` " +
-        "(`event_id`,`title`,`emoji`,`scheduled_date`,`parent_id`) " +
-        "VALUES (?,?,?,?,?)"
+private const val calendarEventInsertQuery =
+    "INSERT OR REPLACE INTO `calendar_events` " +
+            "(`event_id`,`title`,`emoji`,`scheduled_date`,`parent_id`) " +
+            "VALUES (?,?,?,?,?)"
