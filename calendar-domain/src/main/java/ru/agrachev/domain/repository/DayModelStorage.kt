@@ -1,8 +1,0 @@
-package ru.agrachev.calendardomain.repository
-
-interface DayModelStorage<K, V : List<*>> {
-
-    operator fun get(key: K): V?
-
-    fun put(key: K, value: V): V?
-}
