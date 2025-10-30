@@ -91,7 +91,7 @@ class ExtensionsTest {
     @Test
     fun `fraction of a float is between 0 and 1 exclusive`() {
         val float = (random() * RANDOM_LENGTH).toFloat()
-        expectThat(float - float.fraction).isEqualTo(floor(float))
+        expectThat(float.fraction).isEqualTo(float - floor(float))
     }
 
     private fun randomIntRange() = randomInt().let {

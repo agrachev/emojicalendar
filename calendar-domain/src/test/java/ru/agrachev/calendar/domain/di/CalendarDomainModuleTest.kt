@@ -12,7 +12,7 @@ class CalendarDomainModuleTest : KoinTest {
     @OptIn(KoinExperimentalAPI::class)
     @Test
     fun `domain module validation throws an exception`() {
-        // Expected since missing definitions are provider by other modules
+        // Expected since missing definitions are providing by other modules
         expectThrows<MissingKoinDefinitionException> {
             verify(calendarDomainModule)
         }
