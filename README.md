@@ -4,7 +4,7 @@
 
 ## 📷 Preview
 
-
+![App Preview](misc/preview.gif)
 
 ## ⚙️ Technical Details
 
