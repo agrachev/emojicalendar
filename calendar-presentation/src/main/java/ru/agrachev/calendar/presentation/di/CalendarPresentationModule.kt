@@ -17,17 +17,10 @@ import java.time.format.FormatStyle
 
 val calendarPresentationModule = module {
     factoryOf<MainCalendarUIModelStorage>(::MainCalendarDateUIModelStorage)
-    factory<UIModelProvider<EmojiCalendarUIModel>> {
-        EmojiCalendarUIModelProvider(
-            storage = get(),
-        )
-    }
+    factoryOf<UIModelProvider<EmojiCalendarUIModel>, MainCalendarUIModelStorage>(::EmojiCalendarUIModelProvider)
     factory {
-        val calendarViewUIModelProvider: UIModelProvider<EmojiCalendarUIModel> by inject()
-        calendarViewUIModelProvider.provideInstance()
+        get<UIModelProvider<EmojiCalendarUIModel>>().provideInstance()
     }
-
-    // TODO Should be scoped to viewmodel only
     factory {
         EmojiCalendarStoreFactory(
             storeFactory = DefaultStoreFactory(),
@@ -36,13 +29,12 @@ val calendarPresentationModule = module {
             initialState = get(),
         ).create()
     }
-    viewModelOf(::CalendarViewModel)
-
     factory {
         DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
     }
-
     factory { parameters ->
         DateRangeThumbState(parameters[0], parameters[1], get())
     }
+
+    viewModelOf(::CalendarViewModel)
 }

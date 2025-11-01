@@ -185,7 +185,7 @@ private fun MainCalendarScope.YearMonthRow() {
         initialFirstVisibleItemIndex = currentMonth,
     )
     YearMonthLazyRow(
-        stickyHeaderContent = { yearOffsetFromNow: Int, modifier: Modifier ->
+        stickyHeaderContent = { yearOffsetFromNow: Int ->
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -210,7 +210,7 @@ private fun MainCalendarScope.YearMonthRow() {
                 )
             }
         },
-        itemContent = { monthIndex: Int, modifier: Modifier ->
+        itemContent = { monthIndex: Int ->
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -375,7 +375,7 @@ fun GreetingPreview() {
             override fun put(
                 key: CalendarDateStorageKey,
                 value: CalendarDateStorageValue
-            ): CalendarDateStorageValue? = TODO()
+            ): CalendarDateStorageValue = TODO()
         },
     )
     EmojiCalendarTheme {

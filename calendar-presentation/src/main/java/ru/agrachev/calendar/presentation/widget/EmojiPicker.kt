@@ -35,6 +35,7 @@ fun EmojiPicker(
         modifier = modifier then Modifier
             .pointerInput(Unit) {
                 detectVerticalDragGestures { change, dragAmount ->
+                    change.consume()
                     lastDragAmount = -dragAmount
                 }
             },

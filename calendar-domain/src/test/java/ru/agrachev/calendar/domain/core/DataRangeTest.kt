@@ -13,7 +13,7 @@ class DataRangeTest {
     fun `range is valid when the end date is after the start`() {
         testDate.plusDays(1).also { nextDay ->
             expectThat(DateRange.of(testDate, nextDay))
-                .get { start == testDate && end == nextDay }.isTrue()
+                .get { start.isEqual(testDate) && end.isEqual(nextDay) }.isTrue()
         }
     }
 
@@ -21,7 +21,7 @@ class DataRangeTest {
     fun `range is valid when the end date is the same as the start`() {
         testDate.plusDays(0).also { sameDay ->
             expectThat(DateRange.of(testDate, sameDay))
-                .get { start == testDate && end == sameDay }.isTrue()
+                .get { start.isEqual(testDate) && end.isEqual(sameDay) }.isTrue()
         }
     }
 

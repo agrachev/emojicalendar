@@ -1,40 +1,13 @@
 plugins {
-    alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.conventions.android.library)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.conventions.koin)
+    alias(libs.plugins.conventions.test)
 }
 
 android {
     namespace = "ru.agrachev.calendar.presentation"
-    compileSdk {
-        version = release(36)
-    }
 
-    defaultConfig {
-        minSdk = 26
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlin {
-        compilerOptions {
-            jvmToolchain(17)
-        }
-    }
     buildFeatures {
         compose = true
     }
@@ -54,7 +27,7 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.core.ktx)
     implementation(libs.androidx.junit.ktx)
-    runtimeOnly(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.runtime.tracing)
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
@@ -67,22 +40,16 @@ dependencies {
     implementation(libs.androidx.emoji2.emojipicker)
     implementation(libs.androidx.recyclerview)
 
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
-
     implementation(libs.mvikotlin)
     implementation(libs.mvikotlin.main)
     implementation(libs.mvikotlin.extensions.coroutines)
 
     implementation(libs.google.guava)
 
-    implementation(project.dependencies.platform(libs.koin.bom))
-    implementation(libs.koin.core)
-    implementation(libs.koin.android)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
 
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
 }

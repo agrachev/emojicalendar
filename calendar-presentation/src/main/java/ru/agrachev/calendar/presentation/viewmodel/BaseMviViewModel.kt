@@ -10,10 +10,8 @@ open class BaseMviViewModel<in I : Any, out M : Any, out L : Any>(
 ) : ViewModel(), MviStateHolder<I, M, L> {
 
     override val initialUiState by store::state
-    override val uiState
-        get() = store.states
-    override val labels
-        get() = store.labels
+    override val uiState = store.states
+    override val labels = store.labels
 
     override fun accept(intent: I) = store.accept(intent)
 

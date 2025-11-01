@@ -37,7 +37,7 @@ class ExtensionsTest {
     fun `unary minus on int range returns inverted source range`() {
         val r1 = randomIntRange()
         expectThat(-r1)
-            .get { start == -r1.start && endInclusive == -r1.endInclusive }.isTrue()
+            .get { start == -r1.first && endInclusive == -r1.last }.isTrue()
     }
 
     @Test
@@ -45,7 +45,7 @@ class ExtensionsTest {
         val r1 = randomIntRange()
         val r2 = randomIntRange()
         expectThat(r1 + r2)
-            .get { start == r1.start + r2.start && endInclusive == r1.endInclusive + r2.endInclusive }
+            .get { start == r1.first + r2.first && endInclusive == r1.last + r2.last }
             .isTrue()
     }
 
@@ -54,7 +54,7 @@ class ExtensionsTest {
         val r1 = randomIntRange()
         val r2 = randomIntRange()
         expectThat(r1 - r2)
-            .get { start == r1.start - r2.start && endInclusive == r1.endInclusive - r2.endInclusive }
+            .get { start == r1.first - r2.first && endInclusive == r1.last - r2.last }
             .isTrue()
     }
 
@@ -63,7 +63,7 @@ class ExtensionsTest {
         val r1 = randomIntRange()
         val rInt = randomInt()
         expectThat(r1 + rInt)
-            .get { start == r1.start + rInt && endInclusive == r1.endInclusive + rInt }
+            .get { start == r1.first + rInt && endInclusive == r1.last + rInt }
             .isTrue()
     }
 
@@ -72,14 +72,14 @@ class ExtensionsTest {
         val r1 = randomIntRange()
         val rInt = randomInt()
         expectThat(r1 - rInt)
-            .get { start == r1.start - rInt && endInclusive == r1.endInclusive - rInt }
+            .get { start == r1.first - rInt && endInclusive == r1.last - rInt }
             .isTrue()
     }
 
     @Test
     fun `length of a range is a difference of its ranges`() {
         val r1 = randomIntRange()
-        expectThat(r1.length).isEqualTo(abs(r1.endInclusive - r1.start))
+        expectThat(r1.length).isEqualTo(abs(r1.last - r1.first))
     }
 
     @Test

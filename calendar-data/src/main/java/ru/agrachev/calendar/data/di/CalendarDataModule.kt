@@ -1,9 +1,9 @@
 package ru.agrachev.calendar.data.di
 
 import androidx.room.Room
-import androidx.room.RoomDatabase
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
+import ru.agrachev.calendar.data.dao.CalendarRuleDao
 import ru.agrachev.calendar.data.database.EmojiCalendarDatabase
 import ru.agrachev.calendar.data.repository.EmojiCalendarDataRepository
 import ru.agrachev.calendar.data.repository.EmojiCalendarEventsRepository
@@ -17,16 +17,9 @@ val calendarDataModule = module {
             EmojiCalendarDatabase::class.java, "emoji-calendar-db"
         ).build()
     }
-    single<RoomDatabase> {
-        val db: EmojiCalendarDatabase by inject()
-        db
-    }
-    single {
-        val db: EmojiCalendarDatabase by inject()
-        db.calendarRuleDao()
+    factory {
+        get<EmojiCalendarDatabase>().calendarRuleDao()
     }
     singleOf<CalendarDataRepository>(::EmojiCalendarDataRepository)
-    single<CalendarEventsRepository> {
-        EmojiCalendarEventsRepository(get(), get())
-    }
+    singleOf<CalendarEventsRepository, EmojiCalendarDatabase, CalendarRuleDao>(::EmojiCalendarEventsRepository)
 }

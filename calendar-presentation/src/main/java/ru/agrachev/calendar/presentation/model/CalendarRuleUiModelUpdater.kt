@@ -9,23 +9,21 @@ internal sealed class CalendarRuleUiModelUpdater(
 
     class TitleUpdater(
         calendarRuleUIModel: CalendarRuleUIModel,
-        val newTitle: String,
+        newTitle: String,
     ) : CalendarRuleUiModelUpdater(calendarRuleUIModel) {
-        override val title: String
-            get() = newTitle
+        override val title = newTitle
     }
 
     class DateRangeOffsetIndexesUpdater(
         calendarRuleUIModel: CalendarRuleUIModel,
-        val newDateRangeOffsetIndexes: IntRange,
+        newDateRangeOffsetIndexes: IntRange,
     ) : CalendarRuleUiModelUpdater(calendarRuleUIModel) {
-        override val dateRangeOffsetIndexes: IntRange
-            get() = newDateRangeOffsetIndexes
-        override val calendarEventsUiModels: Set<CalendarEventUIModel>
-            get() = super.calendarEventsUiModels.toMutableSet().let { events ->
+        override val dateRangeOffsetIndexes = newDateRangeOffsetIndexes
+        override val calendarEventsUiModels =
+            super.calendarEventsUiModels.toMutableSet().let { events ->
                 events.removeAll {
                     with(newDateRangeOffsetIndexes) {
-                        it.dateIndex < start || it.dateIndex >= endInclusive
+                        it.dateIndex !in start..<endInclusive
                     }
                 }
                 events.toSet()
@@ -34,29 +32,27 @@ internal sealed class CalendarRuleUiModelUpdater(
 
     class CalendarEventsUIModelsUpdater(
         calendarRuleUIModel: CalendarRuleUIModel,
-        val calendarEventUIModel: CalendarEventUIModel?,
-        val calendarEventUIModelReducer: CalendarEventUIModel.() -> CalendarEventUIModel,
+        calendarEventUIModel: CalendarEventUIModel?,
+        calendarEventUIModelReducer: CalendarEventUIModel.() -> CalendarEventUIModel,
     ) : CalendarRuleUiModelUpdater(calendarRuleUIModel) {
-        override val calendarEventsUiModels: Set<CalendarEventUIModel>
-            get() = with(
-                (calendarEventUIModel ?: CalendarEventUIModel())
-                    .calendarEventUIModelReducer()
-            ) {
-                super.calendarEventsUiModels.toMutableSet().let { events ->
-                    events.removeIf { it.dateIndex == this.dateIndex }
-                    events.add(this)
-                    events.sortedWith(
-                        comparator = Constants.CALENDAR_EVENTS_UI_MODEL_COMPARATOR,
-                    ).toSet()
-                }
+        override val calendarEventsUiModels = with(
+            (calendarEventUIModel ?: CalendarEventUIModel())
+                .calendarEventUIModelReducer()
+        ) {
+            super.calendarEventsUiModels.toMutableSet().let { events ->
+                events.removeIf { it.dateIndex == this.dateIndex }
+                events.add(this)
+                events.sortedWith(
+                    comparator = Constants.CALENDAR_EVENTS_UI_MODEL_COMPARATOR,
+                ).toSet()
             }
+        }
     }
 
     class RecurrenceRuleUpdater(
         calendarRuleUIModel: CalendarRuleUIModel,
-        val newRecurrenceRule: RecurrenceRule,
+        newRecurrenceRule: RecurrenceRule,
     ) : CalendarRuleUiModelUpdater(calendarRuleUIModel) {
-        override val recurrenceRule: RecurrenceRule
-            get() = newRecurrenceRule
+        override val recurrenceRule = newRecurrenceRule
     }
 }

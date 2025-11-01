@@ -54,6 +54,8 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import ru.agrachev.calendar.domain.core.Constants.WEEK_DAY_COUNT
+import ru.agrachev.calendar.domain.core.length
 import ru.agrachev.calendar.presentation.LocalLocalizedCalendarResources
 import ru.agrachev.calendar.presentation.R
 import ru.agrachev.calendar.presentation.core.Constants
@@ -81,8 +83,6 @@ import ru.agrachev.calendar.presentation.widget.slider.DateRangeThumb
 import ru.agrachev.calendar.presentation.widget.slider.OffsetRangeSlider
 import ru.agrachev.calendar.presentation.widget.slider.rememberDateRangeThumbState
 import ru.agrachev.calendar.presentation.widget.slider.rememberOffsetRangeSliderState
-import ru.agrachev.calendar.domain.core.Constants.WEEK_DAY_COUNT
-import ru.agrachev.calendar.domain.core.length
 import java.time.temporal.WeekFields
 
 @Composable
@@ -108,7 +108,7 @@ fun EventEditorModalScreen(
                 val tileIndexOffset =
                     (WEEK_DAY_COUNT / 2 - tileIndexesRange.length / 2).coerceAtLeast(0)
                 val calendarRowState = rememberLazyListState(
-                    initialFirstVisibleItemIndex = tileIndexesRange.start - tileIndexOffset,
+                    initialFirstVisibleItemIndex = tileIndexesRange.first - tileIndexOffset,
                     initialFirstVisibleItemScrollOffset =
                         -((layoutWidth - contentWidth) / 2f).toIntPx(),
                 )
@@ -163,17 +163,17 @@ fun EventEditorModalScreen(
                     }
                         .onEach {
                             startThumbState.dateState =
-                                now.plusDays(it.start + 0L)
+                                now.plusDays(it.first + 0L)
                             endThumbState.dateState =
-                                now.plusDays(it.endInclusive - 1L)
+                                now.plusDays(it.last - 1L)
                             endThumbState.expanded = it.length > 1
                         }
                         .map { it.dateItemIndexes }
                         .observeStateChanges { itemIndexes ->
                             requestDateRangeOffsetIndexesUpdate(itemIndexes)
                             val index = selectedDateIndex.coerceIn(
-                                itemIndexes.start,
-                                itemIndexes.endInclusive - 1
+                                itemIndexes.first,
+                                itemIndexes.last - 1
                             )
                             if (selectedDateIndex != index) {
                                 setSelectedDateIndex(index)
@@ -230,7 +230,7 @@ fun EventEditorModalScreen(
                             },
                             isItemActiveCallback = {
                                 with(selectedDateRangeIndexes.dateItemIndexes) {
-                                    index >= start && index < endInclusive
+                                    index in start..<endInclusive
                                 }
                             },
                             isItemSelectedCallback = {
@@ -289,7 +289,7 @@ internal fun rememberEventEditorScope(
 ): EventEditorScope {
     val selectedDateIndex = rememberSaveable {
         mutableIntStateOf(
-            pendingRuleProvider().dateRangeOffsetIndexes.start
+            pendingRuleProvider().dateRangeOffsetIndexes.first
         )
     }
     val selectedCalendarEvent = remember {

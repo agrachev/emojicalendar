@@ -2,7 +2,6 @@ package ru.agrachev.calendar.presentation.widget
 
 import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -22,15 +21,11 @@ private const val MARGIN = 2
 
 @Composable
 fun YearMonthLazyRow(
-    stickyHeaderContent: @Composable (yearOffsetFromNow: Int, modifier: Modifier) -> Unit,
-    itemContent: @Composable (monthIndex: Int, modifier: Modifier) -> Unit,
+    stickyHeaderContent: @Composable (Int) -> Unit,
+    itemContent: @Composable (Int) -> Unit,
     modifier: Modifier = Modifier,
     lazyRowState: LazyListState = rememberLazyListState(),
 ) {
-    val tileModifier = remember {
-        Modifier
-            .wrapContentSize()
-    }
     var range by remember {
         mutableStateOf(0..1)
     }
@@ -72,14 +67,14 @@ fun YearMonthLazyRow(
                 key = yearTileIndex,
                 contentType = YearMonthItemContentType.YEAR,
             ) {
-                stickyHeaderContent(times, tileModifier)
+                stickyHeaderContent(times)
             }
             items(
                 count = MONTH_COUNT,
                 key = { yearTileIndex + (it + 1) },
                 contentType = { YearMonthItemContentType.MONTH },
             ) {
-                itemContent(it, tileModifier)
+                itemContent(it)
             }
         }
     }

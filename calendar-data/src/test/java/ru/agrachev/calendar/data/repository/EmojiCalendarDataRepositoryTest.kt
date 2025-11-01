@@ -100,7 +100,6 @@ class EmojiCalendarDataRepositoryTest {
                     monthOffset,
                 )
             }
-                .asSequence()
                 .all { it }
         expectThat(areAllConditionsTrue).isTrue()
     }
