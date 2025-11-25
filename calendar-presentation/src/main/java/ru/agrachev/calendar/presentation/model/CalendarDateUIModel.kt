@@ -2,7 +2,7 @@ package ru.agrachev.calendar.presentation.model
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import ru.agrachev.calendar.presentation.core.MainCalendarUIModelStorage
+import ru.agrachev.calendar.domain.core.Constants.WEEK_DAY_COUNT
 import ru.agrachev.calendar.domain.core.DateRange
 import ru.agrachev.calendar.domain.core.length
 import ru.agrachev.calendar.domain.model.CalendarDate
@@ -10,6 +10,7 @@ import ru.agrachev.calendar.domain.model.CalendarEvent
 import ru.agrachev.calendar.domain.model.CalendarRule
 import ru.agrachev.calendar.domain.model.Id
 import ru.agrachev.calendar.domain.model.RecurrenceRule
+import ru.agrachev.calendar.presentation.core.MainCalendarUIModelStorage
 import ru.agrachev.calendar.presentation.core.dateItemIndex
 import ru.agrachev.calendar.presentation.core.dateItemIndexes
 import ru.agrachev.calendar.presentation.core.regularOffset
@@ -66,19 +67,15 @@ data class CalendarRuleUIModel(
 ) : CalendarRuleUILayout {
 
     fun getCalendarEventForIndex(index: Int) = calendarEventsUiModels.find {
-        when (recurrenceRule) {
-            RecurrenceRule.NONE -> it.dateIndex == index
-
+        index >= it.dateIndex && when (recurrenceRule) {
             RecurrenceRule.PERIOD -> dateRangeOffsetIndexes.length
                 .let { rangeLength ->
                     index % rangeLength == it.dateIndex % rangeLength
                 }
 
-            RecurrenceRule.WEEK -> (it.dateIndex - index) % 7 == 0
+            RecurrenceRule.WEEK -> (it.dateIndex - index) % WEEK_DAY_COUNT == 0
 
-            else -> {
-                it.dateIndex == index
-            }
+            else -> it.dateIndex == index
         }
     }
 }

@@ -22,13 +22,13 @@ internal inline val IntRange.regularOffsets
     get() = this - Constants.NOW_INDEX
 
 internal inline val CalendarEventUIModel?.nullableId
-    get() = this?.id ?: CalendarEventUIModel.Defaults.DEFAULT_ID
+    get() = this?.id ?: CalendarEventUIModel.DEFAULT_ID
 internal inline val CalendarEventUIModel?.nullableTitle
-    get() = this?.title ?: CalendarEventUIModel.Defaults.DEFAULT_TITLE
+    get() = this?.title ?: CalendarEventUIModel.DEFAULT_TITLE
 internal inline val CalendarEventUIModel?.nullableEmoji
-    get() = this?.emoji ?: CalendarEventUIModel.Defaults.DEFAULT_EMOJI
+    get() = this?.emoji ?: CalendarEventUIModel.DEFAULT_EMOJI
 internal inline val CalendarEventUIModel?.nullableDateIndex
-    get() = this?.dateIndex ?: CalendarEventUIModel.Defaults.DEFAULT_DATE_INDEX
+    get() = this?.dateIndex ?: CalendarEventUIModel.DEFAULT_DATE_INDEX
 
 internal suspend inline fun <T> Flow<T>.observeStateChanges(collector: FlowCollector<T>) = this
     .drop(1)

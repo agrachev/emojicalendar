@@ -88,8 +88,14 @@ fun EventBrowserModalScreen(
         if (dateUIModel.calendarEvents.isNotEmpty()) {
             EventListBrowserModalScreen(
                 calendarEvents = dateUIModel.calendarEvents,
-                onEventClicked = { index ->
+                onEditOccurrenceClicked = { index ->
                     onEventItemClicked(CalendarItem.selected(index))
+                },
+                onRemoveSingleEventClicked = {
+                    
+                },
+                onRemoveOccurrenceClicked = {
+                    
                 },
                 modifier = modifier,
             )

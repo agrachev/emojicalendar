@@ -69,7 +69,7 @@ fun RepeatButton(
                     recurrenceRuleButtonState.toggleNext(
                         onNextCallback = onRepeatModeChanged,
                     )
-                }
+                },
             ),
     ) {
         Image(

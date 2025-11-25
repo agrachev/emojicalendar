@@ -56,9 +56,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import ru.agrachev.calendar.domain.core.Constants.WEEK_DAY_COUNT
 import ru.agrachev.calendar.domain.core.length
+import ru.agrachev.calendar.domain.core.plus
 import ru.agrachev.calendar.presentation.LocalLocalizedCalendarResources
 import ru.agrachev.calendar.presentation.R
 import ru.agrachev.calendar.presentation.core.Constants
+import ru.agrachev.calendar.presentation.core.Constants.NOW_INDEX
 import ru.agrachev.calendar.presentation.core.LocalDateProvider
 import ru.agrachev.calendar.presentation.core.dateItemIndexes
 import ru.agrachev.calendar.presentation.core.observeStateChanges
@@ -83,6 +85,8 @@ import ru.agrachev.calendar.presentation.widget.slider.DateRangeThumb
 import ru.agrachev.calendar.presentation.widget.slider.OffsetRangeSlider
 import ru.agrachev.calendar.presentation.widget.slider.rememberDateRangeThumbState
 import ru.agrachev.calendar.presentation.widget.slider.rememberOffsetRangeSliderState
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.time.temporal.WeekFields
 
 @Composable
@@ -91,6 +95,7 @@ fun EventEditorModalScreen(
     pendingRuleUpdater: (CalendarRuleUILayout) -> Unit,
     onCalendarRulePushRequest: (CalendarRuleUIModel) -> Unit,
     modifier: Modifier = Modifier,
+    calendarDate: LocalDate = LocalDateProvider.current,
 ) {
     val now = LocalDateProvider.current
     BoxWithConstraints(
@@ -103,8 +108,8 @@ fun EventEditorModalScreen(
             modifier = Modifier
                 .fillMaxSize(),
         ) {
-            with(rememberEventEditorScope(pendingRuleProvider, pendingRuleUpdater)) {
-                val tileIndexesRange = pendingRuleProvider().dateRangeOffsetIndexes
+            with(rememberEventEditorScope(calendarDate, pendingRuleProvider, pendingRuleUpdater)) {
+                val tileIndexesRange = pendingRuleProvider().dateRangeOffsetIndexes + dateShift
                 val tileIndexOffset =
                     (WEEK_DAY_COUNT / 2 - tileIndexesRange.length / 2).coerceAtLeast(0)
                 val calendarRowState = rememberLazyListState(
@@ -170,7 +175,9 @@ fun EventEditorModalScreen(
                         }
                         .map { it.dateItemIndexes }
                         .observeStateChanges { itemIndexes ->
-                            requestDateRangeOffsetIndexesUpdate(itemIndexes)
+                            requestDateRangeOffsetIndexesUpdate(itemIndexes, dateShift.apply {
+                                dateShift = 0
+                            })
                             val index = selectedDateIndex.coerceIn(
                                 itemIndexes.first,
                                 itemIndexes.last - 1
@@ -203,7 +210,7 @@ fun EventEditorModalScreen(
                         }
                         .collect { text ->
                             requestCalendarEventsModelsUpdate(
-                                dateIndex = selectedDateIndex,
+                                dateIndex = selectedDateIndex - dateShift,
                                 title = text.toString(),
                             )
                         }
@@ -284,19 +291,27 @@ fun EventEditorModalScreen(
 
 @Composable
 internal fun rememberEventEditorScope(
+    calendarDate: LocalDate,
     pendingRuleProvider: () -> CalendarRuleUIModel,
     pendingRuleUpdater: (CalendarRuleUILayout) -> Unit,
 ): EventEditorScope {
+    val now = LocalDateProvider.current
     val selectedDateIndex = rememberSaveable {
-        mutableIntStateOf(
-            pendingRuleProvider().dateRangeOffsetIndexes.first
-        )
+        pendingRuleProvider().dateRangeOffsetIndexes.let {
+            val dateShift = ChronoUnit.DAYS.between(
+                now.plusDays(
+                    it.first.toLong() - NOW_INDEX,
+                ), calendarDate
+            ).toInt()
+            mutableIntStateOf(
+                it.first + dateShift
+            )
+        }
     }
     val selectedCalendarEvent = remember {
         derivedStateOf {
-            pendingRuleProvider().calendarEventsUiModels.find {
-                it.dateIndex == selectedDateIndex.intValue
-            }
+            pendingRuleProvider()
+                .getCalendarEventForIndex(selectedDateIndex.intValue)
         }
     }
     return remember {
@@ -305,6 +320,10 @@ internal fun rememberEventEditorScope(
             override val selectedCalendarEvent by selectedCalendarEvent
             override val pendingRuleProvider = pendingRuleProvider
             override val pendingRuleUpdater = pendingRuleUpdater
+            override var dateShift: Int =
+                selectedCalendarEvent.value?.let { calendarEvent ->
+                    selectedDateIndex.intValue - calendarEvent.dateIndex
+                } ?: 0
         }
     }
 }
@@ -517,7 +536,7 @@ private fun Modifier.moveWithList(
 private fun EventEditorScope.rememberEmojiPickedCallbackBuilder() = remember {
     fun(index: Int) = { emoji: String ->
         this.requestCalendarEventsModelsUpdate(
-            dateIndex = index,
+            dateIndex = index - dateShift,
             emoji = emoji,
         )
     }

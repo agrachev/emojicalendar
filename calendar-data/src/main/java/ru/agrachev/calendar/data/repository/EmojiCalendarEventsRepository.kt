@@ -3,14 +3,13 @@ package ru.agrachev.calendar.data.repository
 import androidx.room.RoomDatabase
 import androidx.room.withTransaction
 import kotlinx.coroutines.flow.map
-import ru.agrachev.calendar.domain.model.CalendarEvent
-import ru.agrachev.calendar.domain.model.CalendarRule
-import ru.agrachev.calendar.domain.model.Id
-import ru.agrachev.calendar.domain.repository.CalendarEventsRepository
 import ru.agrachev.calendar.data.dao.CalendarRuleDao
 import ru.agrachev.calendar.data.entity.toCalendarEventEntity
 import ru.agrachev.calendar.data.entity.toCalendarRule
 import ru.agrachev.calendar.data.entity.toCalendarRuleEntity
+import ru.agrachev.calendar.domain.model.CalendarEvent
+import ru.agrachev.calendar.domain.model.CalendarRule
+import ru.agrachev.calendar.domain.repository.CalendarEventsRepository
 
 class EmojiCalendarEventsRepository(
     private val database: RoomDatabase,
@@ -36,11 +35,14 @@ class EmojiCalendarEventsRepository(
             }
         }
 
-    override suspend fun cancelCalendarEvent(calendarEvent: CalendarEvent) =
+    override suspend fun updateCalendarEvent(calendarEvent: CalendarEvent) =
+        calendarRuleDao.updateCalendarEvent(
+            calendarEvent.toCalendarEventEntity()
+        )
+
+    override suspend fun cancelCalendarEventOccurrence(calendarEvent: CalendarEvent) =
         calendarRuleDao.deleteCalendarEvent(
-            calendarEvent.toCalendarEventEntity(
-                parentId = calendarEvent.rule?.id ?: Id.UNIQUE,
-            )
+            calendarEvent.toCalendarEventEntity()
         )
 
     override suspend fun cancelCalendarRule(calendarRule: CalendarRule) =

@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import ru.agrachev.calendar.domain.core.Constants.WEEK_DAY_COUNT
 import ru.agrachev.calendar.domain.model.Id
 import ru.agrachev.calendar.presentation.core.CacheKey
 import ru.agrachev.calendar.presentation.core.CalendarDateStorageKey
@@ -121,6 +122,11 @@ fun EmojiCalendar(viewModel: CalendarMviStateHolder) {
                     uiState.mainCalendarUIModel
                 }
             }
+            val pendingRuleUIModel by remember {
+                derivedStateOf {
+                    uiState.eventsBrowserUIModel?.pendingRule
+                }
+            }
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
             ) { innerPadding ->
@@ -137,14 +143,9 @@ fun EmojiCalendar(viewModel: CalendarMviStateHolder) {
                 }
             }
             uiState.eventsBrowserUIModel?.let {
-                val initialPendingRuleProvider = remember {
-                    {
-                        it.pendingRule
-                    }
-                }
                 DateEventsBottomModal(
                     dateUIModel = it.dateModel,
-                    initialPendingRuleProvider = initialPendingRuleProvider,
+                    initialPendingRuleProvider = { pendingRuleUIModel },
                     calendarStateHolder = viewModel,
                     modifier = Modifier
                         .fillMaxWidth(),
@@ -321,7 +322,7 @@ private fun MainCalendarScope.CalendarGrid(
                     val monthDays =
                         mainCalendarDateUIModelFactory(key)
                             ?: arrayOfNulls<MainCalendarDateUIModel>(
-                                7 * requestNumberOfWeeksCallback(
+                                WEEK_DAY_COUNT * requestNumberOfWeeksCallback(
                                     offset
                                 )
                             ).toList()
@@ -406,7 +407,7 @@ fun Modifier.customBorder(index: Int, width: Dp, color: Color): Modifier =
     this then Modifier.drawWithContent {
         drawContent()
         drawLine(color, Offset.Zero, Offset(size.width, 0f), strokeWidth = width.toPx())
-        if (index % 7 != 6) {
+        if (index % WEEK_DAY_COUNT != WEEK_DAY_COUNT - 1) {
             drawLine(
                 color,
                 Offset(size.width, 0f),

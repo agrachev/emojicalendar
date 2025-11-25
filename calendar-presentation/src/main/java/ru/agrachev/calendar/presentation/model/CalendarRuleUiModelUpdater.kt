@@ -40,7 +40,7 @@ internal sealed class CalendarRuleUiModelUpdater(
                 .calendarEventUIModelReducer()
         ) {
             super.calendarEventsUiModels.toMutableSet().let { events ->
-                events.removeIf { it.dateIndex == this.dateIndex }
+                events.removeIf { it.dateIndex == this.dateIndex || it.id == this.id }
                 events.add(this)
                 events.sortedWith(
                     comparator = Constants.CALENDAR_EVENTS_UI_MODEL_COMPARATOR,

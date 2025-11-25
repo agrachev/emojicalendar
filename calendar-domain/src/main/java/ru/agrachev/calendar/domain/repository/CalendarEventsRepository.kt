@@ -10,7 +10,9 @@ interface CalendarEventsRepository {
 
     suspend fun pushCalendarRule(calendarRule: CalendarRule)
 
-    suspend fun cancelCalendarEvent(calendarEvent: CalendarEvent)
+    suspend fun updateCalendarEvent(calendarEvent: CalendarEvent)
+
+    suspend fun cancelCalendarEventOccurrence(calendarEvent: CalendarEvent)
 
     suspend fun cancelCalendarRule(calendarRule: CalendarRule)
 }

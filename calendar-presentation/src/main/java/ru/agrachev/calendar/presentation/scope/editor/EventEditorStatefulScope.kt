@@ -22,11 +22,21 @@ internal abstract class EventEditorStatefulScope internal constructor() : EventE
 
     override fun requestDateRangeOffsetIndexesUpdate(
         range: IntRange,
+        offset: Int,
     ) {
         pendingRuleUpdater(
             CalendarRuleUiModelUpdater
                 .DateRangeOffsetIndexesUpdater(
-                    calendarRuleUIModel = pendingRuleProvider(),
+                    calendarRuleUIModel = pendingRuleProvider().let {
+                        if (offset == 0) it else it.copy(
+                            calendarEventsUiModels = it.calendarEventsUiModels
+                                .map { m ->
+                                    m.copy(
+                                        dateIndex = m.dateIndex + offset,
+                                    )
+                                }.toSet(),
+                        )
+                    },
                     newDateRangeOffsetIndexes = range,
                 )
         )

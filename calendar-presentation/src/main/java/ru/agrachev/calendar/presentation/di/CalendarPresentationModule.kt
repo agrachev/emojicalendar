@@ -25,6 +25,9 @@ val calendarPresentationModule = module {
         EmojiCalendarStoreFactory(
             storeFactory = DefaultStoreFactory(),
             pushCalendarRuleUseCase = get(),
+            cancelCalendarRuleUseCase = get(),
+            cancelSingleCalendarEventUseCase = get(),
+            cancelCalendarEventOccurrenceUseCase = get(),
             fetchMonthDataUseCase = get(),
             initialState = get(),
         ).create()

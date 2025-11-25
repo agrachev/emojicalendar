@@ -57,4 +57,8 @@ internal abstract class EventBrowserStatefulScope internal constructor() : Event
         emojiIconVisibilityFraction =
             emojiRowListState.layoutInfo.getSelectedItemInvisibilityFraction(index)
     }
+
+    override fun hideDialog() {
+        showDialog = false
+    }
 }

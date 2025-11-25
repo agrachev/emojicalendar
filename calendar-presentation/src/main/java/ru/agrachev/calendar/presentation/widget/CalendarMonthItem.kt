@@ -7,9 +7,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -19,6 +19,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -41,6 +42,7 @@ import ru.agrachev.calendar.presentation.core.regularOffset
 import ru.agrachev.calendar.presentation.model.MainCalendarDateUIModel
 import ru.agrachev.calendar.presentation.shimmer
 import ru.agrachev.calendar.presentation.theme.EmojiCalendarTheme
+import ru.agrachev.calendar.presentation.toIntPx
 
 @Composable
 fun CalendarMonthItem(
@@ -65,7 +67,9 @@ fun CalendarMonthItem(
             },
     ) {
         val textMeasurer = LocalTextMeasurer.current
+        val currentDate = LocalDateProvider.current
         val density = LocalDensity.current
+        val radiusExtension = 4.dp.toIntPx()
         val shimmerSize = remember {
             with(density) {
                 textMeasurer.measure(
@@ -79,13 +83,22 @@ fun CalendarMonthItem(
                 }
             }
         }
+        val currentDateIndicatorColor = MaterialTheme.colorScheme.surfaceContainer
         mainCalendarDateModel?.let { model ->
             Text(
                 text = "${model.date.dayOfMonth}",
                 textAlign = TextAlign.Center,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.TopStart),
+                    .align(Alignment.TopCenter)
+                    .padding(top = 8.dp)
+                    .drawBehind {
+                        if (model.date.isEqual(currentDate)) {
+                            drawCircle(
+                                color = currentDateIndicatorColor,
+                                radius = size.maxDimension / 2 + radiusExtension,
+                            )
+                        }
+                    },
             )
             AnimatedVisibility(
                 visible = !model.emoji.isNullOrEmpty(),

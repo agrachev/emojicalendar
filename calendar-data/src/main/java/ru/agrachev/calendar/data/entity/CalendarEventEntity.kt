@@ -35,7 +35,9 @@ fun CalendarEventEntity.toCalendarEvent() = CalendarEvent(
     scheduledDate = scheduledDate,
 )
 
-fun CalendarEvent.toCalendarEventEntity(parentId: Id) = CalendarEventEntity(
+fun CalendarEvent.toCalendarEventEntity(
+    parentId: Id = this.rule?.id ?: Id.UNIQUE,
+) = CalendarEventEntity(
     eventId = this.id,
     title = this.title,
     emoji = this.emoji,

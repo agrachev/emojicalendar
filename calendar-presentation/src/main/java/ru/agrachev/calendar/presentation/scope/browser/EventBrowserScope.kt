@@ -17,7 +17,9 @@ internal interface EventBrowserScope {
     val totalDragOffset: Float
     val shouldDisplayExtraActions: Boolean
     val shouldDisplayExtraRow: Boolean
+    var showDialog: Boolean
 
     fun undateFullExpandedAnchorOffset(offset: Float)
     fun selectItem(index: Int)
+    fun hideDialog()
 }

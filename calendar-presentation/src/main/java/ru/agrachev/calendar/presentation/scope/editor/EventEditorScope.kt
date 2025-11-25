@@ -13,13 +13,14 @@ import ru.agrachev.calendar.presentation.model.EmojiType
 import ru.agrachev.calendar.presentation.model.TitleType
 
 internal interface EventEditorScope {
+    var dateShift: Int
     var selectedDateIndex: Int
     val selectedCalendarEvent: CalendarEventUIModel?
     val pendingRuleProvider: () -> CalendarRuleUIModel
     val pendingRuleUpdater: (CalendarRuleUILayout) -> Unit
 
     fun requestPendingRuleTitleUpdate(newTitle: String)
-    fun requestDateRangeOffsetIndexesUpdate(range: IntRange)
+    fun requestDateRangeOffsetIndexesUpdate(range: IntRange, offset: Int = 0)
     fun requestCalendarEventsModelsUpdate(
         id: Id = selectedCalendarEvent.nullableId,
         title: TitleType = selectedCalendarEvent.nullableTitle,

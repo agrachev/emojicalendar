@@ -99,7 +99,7 @@ class EmojiCalendarEventsRepositoryTest {
         action = {
             newTestRule.also {
                 repository.pushCalendarRule(it)
-                repository.cancelCalendarEvent(it.calendarEvents.first())
+                repository.cancelCalendarEventOccurrence(it.calendarEvents.first())
             }
         },
     ) {

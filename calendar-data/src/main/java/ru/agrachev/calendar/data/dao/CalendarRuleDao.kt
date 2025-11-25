@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import ru.agrachev.calendar.data.entity.CalendarEventEntity
 import ru.agrachev.calendar.data.entity.CalendarRuleEntity
@@ -16,6 +17,9 @@ interface CalendarRuleDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun pushCalendarRule(calendarRule: CalendarRuleEntity)
+
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun updateCalendarEvent(calendarEvent: CalendarEventEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun pushCalendarEvents(calendarEvents: List<CalendarEventEntity>)

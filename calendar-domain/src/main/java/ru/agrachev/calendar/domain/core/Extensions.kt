@@ -6,20 +6,20 @@ fun Boolean.toInt() = this.compareTo(false)
 fun Boolean.toFloat() = this.toInt().toFloat()
 
 operator fun IntRange.unaryMinus() = IntRange(
-    start = -this.start,
-    endInclusive = -this.endInclusive,
+    start = -this.first,
+    endInclusive = -this.last,
 )
 
 operator fun IntRange.plus(other: IntRange) = IntRange(
-    start = this.start + other.start,
-    endInclusive = this.endInclusive + other.endInclusive,
+    start = this.first + other.first,
+    endInclusive = this.last + other.last,
 )
 
 operator fun IntRange.minus(other: IntRange) = this + -other
 
 operator fun IntRange.plus(value: Int) = IntRange(
-    start = this.start + value,
-    endInclusive = this.endInclusive + value,
+    start = this.first + value,
+    endInclusive = this.last + value,
 )
 
 operator fun IntRange.minus(value: Int) = this + -value

@@ -23,6 +23,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.IntOffset
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlin.math.ceil
 import kotlin.math.round
 import kotlin.math.sign
 
@@ -164,16 +165,15 @@ class OffsetRangeSliderState(
         }
     }
     private val segmentWidth: Float
-        get() = sliderWidth / segments.toFloat()
+        get() = ceil(sliderWidth / segments.toFloat())
 
     internal val startOffsetPx by derivedStateOf {
-        sliderWidth * (startOffsetValue / segments) + segmentWidth * (startOffsetValue % segments)
+        startOffsetValue * segmentWidth
     }
 
     internal val endOffsetPx by derivedStateOf {
         endOffsetValue * segmentWidth
     }
-    //private set
 
     internal var sliderWidth by mutableIntStateOf(0)
 

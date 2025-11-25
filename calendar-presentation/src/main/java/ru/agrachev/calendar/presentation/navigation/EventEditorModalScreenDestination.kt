@@ -24,6 +24,7 @@ internal fun BottomModalScope.EventEditorModalScreenDestination(
             initialValue = initialPendingRuleProvider() ?: emptyCalendarRuleUIModel(dateModel.date),
         )
     EventEditorModalScreen(
+        calendarDate = dateModel.date,
         pendingRuleProvider = { pendingRule },
         pendingRuleUpdater = ::requestPendingRuleUpdate,
         onCalendarRulePushRequest = ::requestPushCalendarRule,

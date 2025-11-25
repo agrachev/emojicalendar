@@ -5,6 +5,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import ru.agrachev.calendar.domain.usecase.CancelCalendarEventOccurrenceUseCase
+import ru.agrachev.calendar.domain.usecase.CancelCalendarRuleUseCase
+import ru.agrachev.calendar.domain.usecase.CancelSingleCalendarEventUseCase
 import ru.agrachev.calendar.domain.usecase.FetchMonthDataUseCase
 import ru.agrachev.calendar.domain.usecase.PushCalendarRuleUseCase
 import ru.agrachev.calendar.presentation.model.EmojiCalendarUIModel
@@ -15,6 +18,9 @@ import kotlin.coroutines.CoroutineContext
 internal class EmojiCalendarExecutor(
     private val fetchMonthDataUseCase: FetchMonthDataUseCase,
     private val pushCalendarRuleUseCase: PushCalendarRuleUseCase,
+    private val cancelCalendarRuleUseCase: CancelCalendarRuleUseCase,
+    private val cancelSingleCalendarEventUseCase: CancelSingleCalendarEventUseCase,
+    private val cancelCalendarEventOccurrenceUseCase: CancelCalendarEventOccurrenceUseCase,
     private val defaultDispatcher: CoroutineContext = Dispatchers.Default,
     mainContext: CoroutineContext = Dispatchers.Main,
 ) : CoroutineExecutor<EmojiCalendarIntent, Nothing, EmojiCalendarUIModel, EmojiCalendarMessage, EmojiCalendarLabel>(

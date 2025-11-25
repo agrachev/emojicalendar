@@ -6,4 +6,7 @@
     <string name="title_event_notes">Notes</string>
     <string name="hint_event_notes">Enter Notes Here</string>
     <string name="lbl_no_events">Nothing is planned for today.</string>
+    <string name="lbl_remove_event_text">What events to you want to remove?</string>
+    <string name="lbl_remove_single_event">Only this event</string>
+    <string name="lbl_remove_occurrence">The whole occurrence</string>
 </resources>
