@@ -4,7 +4,7 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
-android {
+android<App> {
     namespace = "ru.agrachev.emojicalendar"
 
     defaultConfig {

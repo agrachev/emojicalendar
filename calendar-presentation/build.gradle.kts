@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.conventions.test)
 }
 
-android {
+android<Lib> {
     namespace = "ru.agrachev.calendar.presentation"
 
     buildFeatures {
@@ -14,8 +14,10 @@ android {
 }
 
 composeCompiler {
-    reportsDestination = layout.buildDirectory.dir("compose_compiler")
-    metricsDestination = layout.buildDirectory.dir("compose_compiler")
+    layout.buildDirectory.dir("compose_compiler").also { composeCompilerDir ->
+        reportsDestination = composeCompilerDir
+        metricsDestination = composeCompilerDir
+    }
 }
 
 dependencies {

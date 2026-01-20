@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.conventions.test)
 }
 
-android {
+android<Lib> {
     namespace = "ru.agrachev.calendar.data"
 }
 
