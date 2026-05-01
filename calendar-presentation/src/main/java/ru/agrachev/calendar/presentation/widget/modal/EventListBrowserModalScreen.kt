@@ -212,7 +212,7 @@ private fun EventBrowserScope.ExtraActionButton(
     onClick: () -> Unit,
 ) {
     val containerColor = MaterialTheme.colorScheme.primaryContainer
-    var isPressed by remember {
+    val (isPressed, setPressed) = remember {
         mutableStateOf(false)
     }
     val clickable by remember {
@@ -263,15 +263,15 @@ private fun EventBrowserScope.ExtraActionButton(
                                 val pointerEvent = awaitPointerEvent()
                                 when (pointerEvent.type) {
                                     PointerEventType.Move ->
-                                        isPressed = pointerEvent.changes.firstOrNull()?.let {
+                                        setPressed(pointerEvent.changes.firstOrNull()?.let {
                                             it.position in buttonBounds
-                                        } == true
+                                        } == true)
 
-                                    PointerEventType.Press -> isPressed = true
-                                    PointerEventType.Release -> isPressed = false
+                                    PointerEventType.Press -> setPressed(true)
+                                    PointerEventType.Release -> setPressed(false)
                                 }
                             } catch (_: Exception) {
-                                isPressed = false
+                                setPressed(isPressed)
                             }
                         }
                     }
